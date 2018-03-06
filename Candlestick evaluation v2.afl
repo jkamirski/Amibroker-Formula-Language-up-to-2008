@@ -1,0 +1,118 @@
+function ParamOptimize( description, defaultVal, minv, maxv, step )
+{
+    return Optimize( description, Param( description, defaultVal, minv, maxv, step ), minv, maxv, step );
+}
+ 
+O1 = Ref(O,-1);O2 = Ref(O,-2);  
+H1 = Ref(H,-1);H2 = Ref(H,-2);  
+L1 = Ref(L,-1);L2 = Ref(L,-2);  
+C1 = Ref(C,-1);C2 = Ref(C,-2);  
+function CandlePattern(P)  
+{  
+global PatternName;  
+if(P == 0) { PatternName = "NearDoji"; Pv = (abs(O-C)<= ((H-L)*0.1)); }  
+else if(P == 1) { PatternName = "BlackCandle"; Pv = (O>C); }  
+else if(P == 2) { PatternName = "LongBlackCandle"; Pv = (O>C AND (O-C)/(.001+H-L)>.6); }  
+else if(P == 3) { PatternName = "SmallBlackCandle"; Pv = ((O>C) AND ((H-L)>(3*(O-C)))); }  
+else if(P == 4) { PatternName = "WhiteCandle"; Pv = (C>O); }  
+else if(P == 5) { PatternName = "LongWhiteCandle"; Pv = ((C>O) AND ((C-O)/(.001+H-L)>.6)); }  
+else if(P == 6) { PatternName = "SmallWhiteCandle"; Pv = ((C>O) AND ((H-L)>(3*(C-O)))); }  
+else if(P == 7) { PatternName = "BlackMaubozu"; Pv = (O>C AND H==O AND C==L); }  
+else if(P == 8) { PatternName = "WhiteMaubozu"; Pv = (C>O AND H==C AND O==L); }  
+else if(P == 9) { PatternName = "BlackClosingMarubozu"; Pv = (O>C AND C==L); }  
+else if(P == 10) { PatternName = "WhiteClosingMarubozu"; Pv = (C>O AND C==H); }  
+else if(P == 11) { PatternName = "BlackOpeningMarubozu"; Pv = (O>C AND O==H); }  
+else if(P == 12) { PatternName = "WhiteOpeningMarubozu"; Pv = (C>O AND O==L); }  
+else if(P == 13) { PatternName = "HangingMan"; Pv = (((H-L)>4*(O-C)) AND ((C-L)/(.001+H-L)>= 0.75) AND ((O-L)/(.001+H-L)>= 0.75)); }  
+else if(P == 14) { PatternName = "Hammer"; Pv = (((H-L)>3*(O-C)) AND ((C-L)/(.001+H-L)>0.6) AND ((O-L)/(.001+H-L)>0.6)); }  
+else if(P == 15) { PatternName = "InvertedHammer"; Pv = (((H-L)>3*(O-C)) AND ((H-C)/(.001+H-L)>0.6) AND ((H-O)/(.001+H-L)>0.6)); }  
+else if(P == 16) { PatternName = "ShootingStar"; Pv = (((H-L)>4*(O-C)) AND ((H-C)/(.001+H-L)>= 0.75) AND ((H-O)/(.001+H-L)>= 0.75)); }  
+else if(P == 17) { PatternName = "BlackSpinningTop"; Pv = ((O>C) AND ((H-L)>(3*(O-C))) AND (((H-O)/(.001+H-L))<.4) AND (((C-L)/(.001+H-L))<.4)); }  
+else if(P == 18) { PatternName = "WhiteSpinningTop"; Pv = ((C>O) AND ((H-L)>(3*(C-O))) AND (((H-C)/(.001+H-L))<.4) AND (((O-L)/(.001+H-L))<.4)); }  
+else if(P == 19) { PatternName = "BearishAbandonedBaby"; Pv = ((C1 == O1) AND (C2>O2) AND (O>C) AND (L1>H2) AND (L1>H)); }  
+else if(P == 20) { PatternName = "BearishEveningDojiStar"; Pv = ((C2>O2) AND ((C2-O2)/(.001+H2-L2)>.6) AND (C2<O1) AND (C1>O1) AND ((H1-L1)>(3*(C1-O1))) AND (O>C) AND (O<O1)); }  
+else if(P == 21) { PatternName = "DarkCloudCover"; Pv = (C1>O1 AND ((C1+O1)/2)>C AND O>C AND O>C1 AND C>O1 AND (O-C)/(.001+(H-L)>0.6)); }  
+else if(P == 22) { PatternName = "BearishEngulfing"; Pv = ((C1>O1) AND (O>C) AND (O>= C1) AND (O1>= C) AND ((O-C)>(C1-O1))); }  
+else if(P == 23) { PatternName = "ThreeOutsideDownPattern"; Pv = ((C2>O2) AND (O1>C1) AND (O1>= C2) AND (O2>= C1) AND ((O1-C1)>(C2-O2)) AND (O>C) AND (C<C1)); }  
+else if(P == 24) { PatternName = "BullishAbandonedBaby"; Pv = ((C1 == O1) AND (O2>C2) AND (C>O) AND (L2>H1) AND (L>H1)); }  
+else if(P == 25) { PatternName = "BullishMorningDojiStar"; Pv = ((O2>C2) AND ((O2-C2)/(.001+H2-L2)>.6) AND (C2>O1) AND (O1>C1) AND ((H1-L1)>(3*(C1-O1))) AND (C>O) AND (O>O1)); }  
+else if(P == 26) { PatternName = "BullishEngulfing"; Pv = ((O1>C1) AND (C>O) AND (C>= O1) AND (C1>= O) AND ((C-O)>(O1-C1))); }  
+else if(P == 27) { PatternName = "ThreeOutsideUpPattern"; Pv = ((O2>C2) AND (C1>O1) AND (C1>= O2) AND (C2>= O1) AND ((C1-O1)>(O2-C2)) AND (C>O) AND (C>C1)); }  
+else if(P == 28) { PatternName = "BullishHarami"; Pv = ((O1>C1) AND (C>O) AND (C<= O1) AND (C1<= O) AND ((C-O)<(O1-C1))); }  
+else if(P == 29) { PatternName = "ThreeInsideUpPattern"; Pv = ((O2>C2) AND (C1>O1) AND (C1<= O2) AND (C2<= O1) AND ((C1-O1)<(O2-C2)) AND (C>O) AND (C>C1) AND (O>O1)); }  
+else if(P == 30) { PatternName = "PiercingLine"; Pv = ((C1<O1) AND (((O1+C1)/2)<C) AND (O<C) AND (O<C1) AND (C<O1) AND ((C-O)/(.001+(H-L))>0.6)); }  
+else if(P == 31) { PatternName = "BearishHarami"; Pv = ((C1>O1) AND (O>C) AND (O<= C1) AND (O1<= C) AND ((O-C)<(C1-O1))); }  
+else if(P == 32) { PatternName = "ThreeInsideDownPattern"; Pv = ((C2>O2) AND (O1>C1) AND (O1<= C2) AND (O2<= C1) AND ((O1-C1)<(C2-O2)) AND (O>C) AND (C<C1) AND (O<O1)); }  
+else if(P == 33) { PatternName = "ThreeWhiteSoldiers"; Pv = (C>O*1.01) AND (C1>O1*1.01) AND (C2>O2*1.01) AND (C>C1) AND (C1>C2) AND (O<C1) AND (O>O1) AND (O1<C2) AND (O1>O2) AND (((H-C)/(H-L))<.2) AND (((H1-C1)/(H1-L1))<.2) AND (((H2-C2)/(H2-L2))<.2); }  
+else if(P == 34) { PatternName = "DarkCloudCover"; Pv = (C1>O1*1.01) AND (O>C) AND (O>H1) AND (C>O1) AND (((C1+O1)/2)>C) AND (C>O1) AND (MA(C,13)-Ref(MA(C,13),-4)>0); }  
+else if(P == 35) { PatternName = "ThreeBlackCrows"; Pv = (O>C*1.01) AND (O1>C1*1.01) AND (O2>C2*1.01) AND (C<C1) AND (C1<C2) AND (O>C1) AND (O<O1) AND (O1>C2) AND (O1<O2) AND (((C-L)/(H-L))<.2) AND (((C1-L1)/(H1-L1))<.2) AND (((C2-L2)/(H2-L2))<.2); }  
+else if(P == 36) { PatternName = "doji"; Pv = (O == C); }  
+else if(P == 37) { PatternName = "GapUp"; Pv = GapUp(); }  
+else if(P == 38) { PatternName = "GapDown"; Pv = GapDown(); }  
+else if(P == 39) { PatternName = "BigGapUp"; Pv = L>1.01*H1; }  
+else if(P == 40) { PatternName = "BigGapDown"; Pv = H<0.99*L1; }  
+else if(P == 41) { PatternName = "HugeGapUp"; Pv = L>1.02*H1; }  
+else if(P == 42) { PatternName = "HugeGapDown"; Pv = H<0.98*L1; }  
+else if(P == 43) { PatternName = "DoubleGapUp"; Pv = GapUp() AND Ref(GapUp(),-1); }  
+else if(P == 44) { PatternName = "DoubleGapDown"; Pv = GapDown() AND Ref(GapDown(),-1); }  
+return Pv;  
+}  
+SetTradeDelays(0,0,0,0);
+SetOption("AllowSameBarExit",False);
+ 
+ 
+P = ParamOptimize("CandlePattern#",20,0,44,1);
+PlotProfit = ParamToggle("Profit Plot","HIDE|SHOW",0);  
+PP = paramOptimize("Profit period (bars)",1,1,10,1);  
+CandlePatternTrue = CandlePattern(P);  
+Mode = Paramoptimize("Mode: Long=0, Short=1",1,0,1,1);
+ 
+if ( Mode == 1 )
+{
+    Short = Cover = 0;
+    Buy = CandlePatternTrue;
+    BuyPrice = C;
+    Sell = Ref( Buy, -PP );
+    SellPrice = O;
+}
+else
+{
+    Buy = Sell = 0;
+    Short = CandlePatternTrue;
+    ShortPrice = C;
+    Cover = Ref( Short, -PP );
+    CoverPrice = O;
+}
+ 
+E 				= Equity(1);
+Profit 		= E-GetOption("InitialEquity");  
+Upday 		= IIf(Ref(CandlePatternTrue,-1), C>O,0);  
+downDay 		= IIf(Ref(CandlePatternTrue,-1), C<O,0);  
+PatternColor= IIf(CandlePatternTrue,2,1);  
+NumUpDays 	= LastValue(Cum(UpDay));  
+NumDownDays = LastValue(Cum(downDay));  
+NumPatterns = LastValue(Cum(CandlePatternTrue ));  
+ 
+GraphXSpace = 10;
+Plot(C,"Close",colorBlack,64);  
+if( PlotProfit ) Plot(E,"",2,styleStaircase|styleOwnScale);  
+Pointer = IIf( CandlePatternTrue, 0.97*L,0);
+//PlotOHLC(0,0,Pointer ,0,"",6,styleCloud|styleNoLabel);
+PlotShapes( IIf(Pointer,shapeUpArrow,shapeNone),colorBlue,0,0.99*L,0);  
+PlotShapes(IIf(Buy OR Cover,shapeUpTriangle,shapeNone),colorBrightGreen,0,C,0);  
+PlotShapes(IIf(Sell OR Short,shapeDownTriangle,shapeNone),colorRed,0,O,0);
+ 
+Title = "\nCANDLE PATTERN ANALYSIS, Ticker: "+ Name()+"\n\n"+  
+" Candle Pattern: "+PatternName+"\n"+
+"#Patterns found: "+NumToStr(NumPatterns ,1.0)+"\n"+  
+"   Next #Updays: "+NumToStr(NumUpDays,1.0,False)+  
+" ["+NumToStr(Nz(NumUpDays/NumPatterns*100),1.0,False)+"%]\n"+  
+" Next #DownDays: "+NumToStr(NumDownDays,1.0,False)+  
+" ["+NumToStr(Nz(NumDownDays/numpatterns*100),1.0,False)+"%]\n\n"+  
+"  Profit at cursor: $"+NumToStr(Profit,1.2)+"\n"+  
+"Ave.Profit/Pattern: $"+NumToStr(Nz(Profit/NumPatterns),1.2)+"\n"+  
+"      Final Profit: $"+NumToStr(LastValue(Profit),1.2)+"\n\n"+
+" Open: "+NumToStr(O,1.2)+"\n"+  
+" High: "+NumToStr(H,1.2)+"\n"+  
+"  Low: "+NumToStr(L,1.2)+"\n"+  
+"Close: "+NumToStr(C,1.2);

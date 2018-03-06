@@ -1,0 +1,219 @@
+_SECTION_BEGIN("Price ADX");
+function PercentR( periods )
+{ return -100 * ( HHV( H, periods ) - C )/( HHV( H, periods ) - LLV( L, periods
+) ); }
+range = Param("Periods", 14, 2, 200, 1 );
+ ADX(range);
+ PDI(range) ;
+ MDI(range);
+SetChartOptions(0,chartShowArrows|chartShowDates);
+_N(Title = StrFormat("{{NAME}} - {{INTERVAL}} {{DATE}} Open %g, Hi %g, Lo %g,
+Close %g (%.1f%%) Vol " +WriteVal( V, 1.0 ) +" {{VALUES}}", O, H, L, C,
+SelectedValue( ROC( C, 1 )) ));
+Plot( C, "Close", IIf( PDI(range) > MDI(range), ParamColor("Up Color",
+colorGreen ), ParamColor("Down Color", colorRed ) ), styleNoTitle |
+ParamStyle("Style") | GetPriceStyle() ); 
+Bull_Trend=(PercentR( Param("Periods", 14, 2, 100 ) )> -30);
+Bear_Trend=(PercentR( Param("Periods", 14, 2, 100 ) )< -70);
+Ribbon_kol=IIf( Bull_Trend, colorGreen, IIf(Bear_Trend, colorRed,colorYellow))
+;
+Plot(6, "ribbon", Ribbon_kol, styleOwnScale| styleArea|
+styleNoLabel,-0.5,100);
+_SECTION_END();
+
+_SECTION_BEGIN("DispMA");
+P = ParamField("Field");
+Type = ParamList("Type", "Simple,Exponential,Double Exponential,Tripple
+Exponential,Wilders,Weighted");
+Periods = Param("Periods", 30, 2, 100 );
+Displacement = Param("Displacement", 15, -50, 50 );
+SL= (HHV(H,13)+LLV(L,13))/2;
+TL= (HHV(H,9)+LLV(L,9))/2;
+m = Ref((SL+TL)/2,-2);
+if( Type == "Simple" ) 					m = MA( P, Periods );
+if( Type == "Exponential" ) 			m = EMA( P, Periods );
+if( Type == "Double Exponential" ) 	m = DEMA( P, Periods );
+if( Type == "Tripple Exponential" ) 	m = TEMA( P, Periods );
+if( Type == "Wilders" ) 				m = Wilders( P, Periods );
+if( Type == "Weighted" ) 				m = WMA( P, Periods );
+
+Plot( m, _DEFAULT_NAME(), IIf( C > m, ParamColor("Up Color", colorGreen ),
+ParamColor("Down Color", colorRed ) ), styleLine, 0, 0, Displacement );
+_SECTION_END();
+
+  /* **********************************
+
+Code to automatically identify pivots
+
+********************************** */
+// -- what will be our lookback range for the hh and ll?
+farback=Param("How Far back to go",100,50,5000,10);
+nBars = Param("Number of bars", 12, 5, 40);
+// -- Title.
+Title = Name() + " (" + StrLeft(FullName(), 15) + ") O: " + Open + ", 
+H: " + High + ", L: " + Low + ", C: " + Close;
+// -- Plot basic candle chart
+PlotOHLC(Open, High, Low, Close, 
+"BIdx = " + BarIndex() + 
+"\n" + "O = " + O + "\n"+"H = "+ H + "\n"+"L = " + L 
++ "\n"+"C ",
+colorBlack, styleCandle); 
+GraphXSpace=7;
+// -- Create 0-initialized arrays the size of barcount
+aHPivs = H - H;
+aLPivs = L - L;
+// -- More for future use, not necessary for basic plotting
+aHPivHighs = H - H;
+aLPivLows = L - L;
+aHPivIdxs = H - H;
+aLPivIdxs = L - L;
+nHPivs = 0;
+nLPivs = 0;
+lastHPIdx = 0;
+lastLPIdx = 0;
+lastHPH = 0;
+lastLPL = 0;
+curPivBarIdx = 0;
+// -- looking back from the current bar, how many bars 
+// back were the hhv and llv values of the previous 
+// n bars, etc.?
+aHHVBars = HHVBars(H, nBars);
+aLLVBars = LLVBars(L, nBars);
+aHHV = HHV(H, nBars);
+aLLV = LLV(L, nBars);
+// -- Would like to set this up so pivots are calculated back from
+// last visible bar to make it easy to "go back" and see the pivots
+// this code would find. However, the first instance of 
+// _Trace output will show a value of 0
+aVisBars = Status("barvisible");
+nLastVisBar = LastValue(Highest(IIf(aVisBars, BarIndex(), 0)));
+_TRACE("Last visible bar: " + nLastVisBar);
+// -- Initialize value of curTrend
+curBar = (BarCount-1);
+curTrend = "";
+if (aLLVBars[curBar] < 
+aHHVBars[curBar]) {
+curTrend = "D";
+}
+else {
+curTrend = "U";
+}
+// -- Loop through bars. Search for 
+// entirely array-based approach
+// in future version
+for (i=0; i<farback; i++) {
+curBar = (BarCount - 1) - i;
+// -- Have we identified a pivot? If trend is down...
+if (aLLVBars[curBar] < aHHVBars[curBar]) {
+// ... and had been up, this is a trend change
+if (curTrend == "U") {
+curTrend = "D";
+// -- Capture pivot information
+curPivBarIdx = curBar - aLLVBars[curBar];
+aLPivs[curPivBarIdx] = 1;
+aLPivLows[nLPivs] = L[curPivBarIdx];
+aLPivIdxs[nLPivs] = curPivBarIdx;
+nLPivs++;
+}
+// -- or current trend is up
+} else {
+if (curTrend == "D") {
+curTrend = "U";
+curPivBarIdx = curBar - aHHVBars[curBar];
+aHPivs[curPivBarIdx] = 1;
+aHPivHighs[nHPivs] = H[curPivBarIdx];
+aHPivIdxs[nHPivs] = curPivBarIdx;
+nHPivs++;
+}
+// -- If curTrend is up...else...
+} 
+// -- loop through bars
+} 
+// -- Basic attempt to add a pivot this logic may have missed
+// -- OK, now I want to look at last two pivots. If the most 
+// recent low pivot is after the last high, I could
+// still have a high pivot that I didn't catch
+// -- Start at last bar
+curBar = (BarCount-1);
+candIdx = 0;
+candPrc = 0;
+lastLPIdx = aLPivIdxs[0];
+lastLPL = aLPivLows[0];
+lastHPIdx = aHPivIdxs[0];
+lastHPH = aHPivHighs[0];
+if (lastLPIdx > lastHPIdx) {
+// -- Bar and price info for candidate pivot
+candIdx = curBar - aHHVBars[curBar];
+candPrc = aHHV[curBar]; 
+if (
+lastHPH < candPrc AND
+candIdx > lastLPIdx AND
+candIdx < curBar) {
+// -- OK, we'll add this as a pivot...
+aHPivs[candIdx] = 1;
+// ...and then rearrange elements in the 
+// pivot information arrays
+for (j=0; j<nHPivs; j++) {
+aHPivHighs[nHPivs-j] = aHPivHighs[nHPivs-
+(j+1)];
+aHPivIdxs[nHPivs-j] = aHPivIdxs[nHPivs-(j+1)];
+}
+aHPivHighs[0] = candPrc ;
+aHPivIdxs[0] = candIdx;
+nHPivs++;
+} 
+} else {
+// -- Bar and price info for candidate pivot
+candIdx = curBar - aLLVBars[curBar];
+candPrc = aLLV[curBar]; 
+if (
+lastLPL > candPrc AND
+candIdx > lastHPIdx AND
+candIdx < curBar) {
+// -- OK, we'll add this as a pivot...
+aLPivs[candIdx] = 1;
+// ...and then rearrange elements in the 
+// pivot information arrays
+for (j=0; j<nLPivs; j++) {
+aLPivLows[nLPivs-j] = aLPivLows[nLPivs-(j+1)];
+aLPivIdxs[nLPivs-j] = aLPivIdxs[nLPivs-(j+1)];
+}
+aLPivLows[0] = candPrc;
+aLPivIdxs[0] = candIdx;
+nLPivs++;
+}
+}
+// -- Dump inventory of high pivots for debugging
+/*
+for (k=0; k<nHPivs; k++) {
+_TRACE("High pivot no. " + k
++ " at barindex: " + aHPivIdxs[k] + ", " 
++ WriteVal(ValueWhen(BarIndex()==aHPivIdxs[k], 
+DateTime(), 1), formatDateTime)
++ ", " + aHPivHighs[k]);
+}
+*/
+// -- OK, let's plot the pivots using arrows
+PlotShapes(IIf(aHPivs==1, shapeDownArrow, shapeNone), colorRed, 0, High,
+Offset=-15);
+PlotShapes(IIf(aLPivs==1, shapeUpArrow , shapeNone), colorBlue, 0, Low,
+Offset=-15);
+
+_SECTION_BEGIN("Bollinger Bands");
+P = ParamField("Price field",-1);
+Periods = Param("Periods", 15, 2, 100, 1 );
+Width = Param("Width", 2, 0, 10, 0.05 );
+Color = ParamColor("Color", colorCycle );
+Style = ParamStyle("Style");
+Plot( BBandTop( P, Periods, Width ), "BBTop" + _PARAM_VALUES(), Color, Style );
+
+Plot( BBandBot( P, Periods, Width ), "BBBot" + _PARAM_VALUES(), Color, Style );
+
+_SECTION_END();
+
+_SECTION_BEGIN("EMA1");
+P = ParamField("Price field",-1);
+Periods = Param("Periods", 15, 2, 200, 1, 10 );
+Plot( EMA( P, Periods ), _DEFAULT_NAME(), ParamColor( "Color", colorCycle ),
+ParamStyle("Style") ); 
+_SECTION_END();

@@ -1,0 +1,19 @@
+/*In the Futures Magazine, October 1998, Dennis McNicholl describesthe use of Bollinger Bands 
+AND provides a means of making them tighter whenmarkets are trending. 
+He calls them Better Bollinger Bands.
+*/
+pds=Param("Periods",20,2,200);
+sd=Param("Standard Deviations",2, 0.01,10);
+alpha=2/(pds+1);
+mt=AMA( C, alpha );
+ut=AMA( mt, alpha );
+dt=((2-alpha)*mt-ut)/(1-alpha);
+mt2=AMA(abs(C-dt), alpha );
+ut2=AMA(mt2,alpha );
+dt2=((2-alpha)*mt2-ut2)/(1-alpha);
+but=dt+sd*dt2;
+blt=dt-sd*dt2;
+
+Plot( C, "Price", colorBlack, styleCandle );
+Plot( but, "Upper band", colorRed );
+Plot( blt, "Lower band", colorRed );

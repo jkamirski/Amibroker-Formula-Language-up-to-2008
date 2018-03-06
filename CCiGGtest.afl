@@ -1,0 +1,84 @@
+/*
+CC = C- Ref(C,-1);
+Plot(CC,"cc", colorRed,styleLine);
+
+GG =((HHV(H,2) - LLV(L,2)) / (V/100));
+Plot(GG,"gg", colorBlue,styleLine);
+
+
+ZC= ( C)-Ref((C),-1) ;
+//wymiar impetu ceny zamkniêcia.
+
+KZC= ZC   /   abs(ZC+0.00001);
+//(kierunek wymiaru impetu ceny zamkniêcia.
+
+MZC= (abs(ZC)- LLV(abs(ZC),10))   /
+          ((HHV(abs(ZC),10)-LLV(abs(ZC),10)) +0.00001 );
+//wzglêdny zakres wymiaru impetu ceny zamkniêcia.
+
+WKZC=Mzc*Kzc;
+//Znormalizowany impet ceny zamkniêcia.
+
+  Plot(wkzc," WKAZC",colorRed,1) ;   
+
+ //Plot(EMA(WKZC,20)," emaWKAZC",colorBlue,1) ;   
+
+
+ZP= (H-Ref(L,-1))  - (Ref(H,-1)-L) ;
+  KZP= ZP   /   abs(ZP+0.00001);
+//(kierunek wymiaru impetu ceny zamkniêcia.
+
+MZP= (abs(ZP)- LLV(abs(ZP),10))   /
+          ((HHV(abs(ZP),10)-LLV(abs(ZP),10)) +0.00001 );
+//wzglêdny zakres wymiaru impetu ceny zamkniêcia.
+
+WKZP=MZP*KZP;
+//Znormalizowany impet ceny zamkniêcia.
+
+  Plot(wkZP," WKAZP",colorGreen,styleThick ) ;
+
+
+ZSS = C - ((HHV(H,2) +LLV(L,2)) / 2);
+KZSS= ZSS   /   abs(ZSS+0.00001);
+//(kierunek wymiaru impetu ceny zamkniêcia.
+
+MZSS= (abs(ZSS)- LLV(abs(ZSS),10))   /
+          ((HHV(abs(ZSS),10)-LLV(abs(ZSS),10)) +0.00001 );
+//wzglêdny zakres wymiaru impetu ceny zamkniêcia.
+
+WKZSS=MZSS*KZSS;
+//Znormalizowany impet ceny zamkniêcia.
+
+  Plot(wkZSS," WKAZSS",colorViolet,1) ;
+
+ZM=  C - ((H+L)/2);   
+KZM= ZM   /   abs(ZM+0.00001);
+//(kierunek wymiaru impetu ceny zamkniêcia.
+
+MZM= (abs(ZM)- LLV(abs(ZM),10))   /
+          ((HHV(abs(ZM),10)-LLV(abs(ZM),10)) +0.00001 );
+//wzglêdny zakres wymiaru impetu ceny zamkniêcia.
+
+WKZM=MZM*KZM;
+//Znormalizowany impet ceny zamkniêcia.
+
+  Plot(wkZM," WKAZM",colorViolet,1) ; 
+
+*/
+
+ZZ= abs(H-Ref(H,-1)) -abs(L-Ref(L,-1));
+
+KZZ= ZZ   /   abs(ZZ+0.00001);
+//(kierunek wymiaru impetu ceny zamkniêcia.
+
+MZZ= (abs(ZZ)- LLV(abs(ZZ),10))   /
+          ((HHV(abs(ZZ),10)-LLV(abs(ZZ),10)) +0.00001 );
+//wzglêdny zakres wymiaru impetu ceny zamkniêcia.
+
+WKZZ=MZZ*KZZ;
+//Znormalizowany impet ceny zamkniêcia.
+
+  //Plot(WKZZ," WKZZ",colorViolet,1) ; 
+//Opt1=Optimize("opt1",2,0,100,1);
+WK=C * ( EMA ( WKZZ,20)  );
+Plot(EMA(WK,12),"WK",colorBlue,styleThick);

@@ -1,0 +1,92 @@
+_SECTION_BEGIN("Automatic Fib Levels");
+ /*--------------------------------------------------- 
+Automatic Fib Levels 
+Aron Pipa, December, 11, 2005 
+modified by Kook 30 December 2005 
+--------------------------------------------------------*/ 
+
+GraphXSpace=2; 
+Plot(C,"", colorBlack,styleCandle); 
+
+// Get values for fib levels 
+
+StartBar=SelectedValue(BarIndex()); 
+FinishBar = EndValue( BarIndex() ); 
+i = startbar; 
+period = FinishBar - StartBar; 
+
+Lo =LLV(L,period); 
+Hi = HHV(H,period); 
+Line0 = 0; 
+Line1 = 0; 
+Line2 = 0; 
+Line3 = 0; 
+Line4 = 0; 
+Line5 = 0; 
+Line6 = 0; 
+Line100 = 0; 
+
+for( i = startbar; i < finishbar; i++ ) 
+{ 
+if(EndValue(C)<SelectedValue(C)) 
+{ 
+Line0 = EndValue(Lo); 
+Line100 = EndValue(Hi); 
+Line1 = Line0 + abs(Line100-Line0)*0.382; 
+Line2 = Line0 + abs(Line100-Line0)*0.5; 
+Line3 = Line0 + abs(Line100-Line0)*0.618; 
+Line4 = Line0 + abs(Line100-Line0)*0.786; 
+Line5 = Line0 + abs(Line100-Line0)*1.618; 
+Line6 = Line0 + abs(Line100-Line0)*2.618; 
+
+} 
+else 
+{ 
+Line100 = EndValue(Lo); 
+Line0 = EndValue(Hi); 
+Line1 =Line0 - abs(Line100-Line0)*0.382; 
+Line2 = Line0 - abs(Line100-Line0)*0.5; 
+Line3 = Line0 - abs(Line100-Line0)*0.618; 
+Line4 = Line0 - abs(Line100-Line0)*0.786; 
+Line5 = Line0 - abs(Line100-Line0)*1.618; 
+Line6 = Line0 - abs(Line100-Line0)*2.618; 
+
+} 
+} 
+
+// external fib lines begining fom selecetdbarindex() 
+fib0= LineArray(startbar, Line0, finishbar, Line0, 0, 1); 
+fib100 = LineArray(startbar, Line100, finishbar, Line100, 0, 1); 
+
+// depth of middle lines 
+n= round((finishbar-startbar)/2); 
+
+// middle lines 
+fib1= LineArray((finishbar-n), Line1, finishbar, Line1, 0, 1); 
+fib2= LineArray((finishbar-n), Line2, finishbar, Line2, 0, 1); 
+fib3= LineArray((finishbar-n), Line3, finishbar, Line3, 0, 1); 
+fib4= LineArray((finishbar-n), Line4, finishbar, Line4, 0, 1); 
+fib5= LineArray((finishbar-n), Line5, finishbar, Line5, 0, 1); 
+fib6= LineArray((finishbar-n), Line6, finishbar, Line6, 0, 1); 
+
+
+Plot(fib0,"", colorWhite); 
+Plot(fib100,"", colorRed); 
+Plot(fib1,"38.6%=", colorOrange); 
+Plot(fib2,"50%=", colorPink); 
+Plot(fib3,"61.8%=", colorPaleGreen); 
+Plot(fib4,"78.6%=", colorYellow); 
+Plot(fib5,"161.8%=", colorSkyblue); 
+//Plot(fib6,"", colorPink); 
+
+
+
+Title = Name() + " - Auto FIB LEVELS " 
++"\n"+EncodeColor(colorOrange)+"38.6% = "+line1 
++"\n"+EncodeColor(colorPink)+"50% = "+line2 
++"\n"+EncodeColor(colorPaleGreen)+"61.8% = "+line3 
++"\n"+EncodeColor(colorYellow)+"78.6% = "+line4 
++"\n"+EncodeColor(colorSkyblue)+"161.8%= "+line5 
++"\n " 
+;
+_SECTION_END();

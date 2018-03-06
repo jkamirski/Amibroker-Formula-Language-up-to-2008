@@ -1,0 +1,239 @@
+/*Against all odds (draft). Written by Thierry HUITEL o-l---} */
+/* based on Jim Varney's work-- CANDLESTOCHASTICS-- */
+/*and all the amibroker group :-) */
+
+/*
+This Exploration is a scan for 24 different buy or sell signals.
+The odds are 1 of 6 to get a TWO with a dice. If you try 1000 times, the odds
+are more than 99%.
+The aim of the exploration is to find days when many bullish or bearish signs
+are triggered at the same time. If 5 indicators give a buy advice, it is more
+reliable than one.
+I invite everybody to add your own systems to these ones, to improve the
+reliability. And experimented technical analysts could give advices to avoid
+the trap of using several different indicators all working off the same input
+data.
+
+Vol Index: this column is the ratio of today's volume to the 14-day average
+volume.
+This column should be sorted Descending. The best signals are occur when
+VolIndex is at least 2 or higher.
+
+PCL[up]: Piercing Line, "up" signifies Bullish.
+MDS[up]: Morning Doji Star
+BLE[up]: Bullish Engulfing
+HAM[up]: Hammer
+BRE[dn]: Bearish Engulfing, "dn" signifies Bearish.
+DCC[dn]: Dark Cloud Cover
+EDS[dn]: Evening Doji Star
+TDREI[up] & [dn]: Tom DeMark's Range Expansion Index
+KUP[up] & [dn]: Keltner Bands -DIMITRIS TSOKAKIS
+RSI[up] & [dn]: Relative Strength Index 14 periods
+MFI[up] & [dn]: Money Flow Index
+ST2[up] & [dn]: Stochastic Slow - Donald Dalley
+DIV[up] & [dn]: % R divergence -DIMITRIS TSOKAKIS
+KST[up] & [dn]: MARTIN PRING'S KST MOMENTUM SYSTEM -TJ
+COP[up]: Coppock Curve TJ
+SMH[up] & [dn]: smash day pattern. DIMA
+CHK[up] & [dn]: Chaikin Money Flow. Thierry Huitel
+
+A "1" in the column signifies TRUE, a "0" indicates no signal.
+------------------------------------------------------------------*/
+"Commentaires sur " + Name() +" pour le "+Date();
+
+/* Minimum Price and 14 day Avg Volume Values for Filter */
+minPrice = 3; //change as needed
+minVol = 50000; //change as needed
+
+VolAvg = MA( V, 14 );
+VolumeIdx = V / VolAvg;
+AvgRange = Sum( abs(O-C),15 )/15;
+
+/* Candle Codes */
+White = IIf((C>O) AND ((C-O)>=0.8*(H-L)),1,0) AND (C-O)>AvgRange;
+Black = IIf((C<O) AND ((O-C)>=0.8*(H-L)),1,0) AND (O-C)>AvgRange;
+Doji = IIf(abs(O-C)<=0.1*(H-L),1,0);
+
+/* Dark Cloud Cover [Bear] */
+DCC = IIf(Ref(White, -1) AND Black AND C<=Ref(((H+L)/2),-1)
+AND O>Ref(C,-1), 1,0);
+
+/* Piercing Line [Bull] */
+PL = IIf(Ref(Black, -1) AND White AND C>=Ref(((H+L)/2),-1)
+AND O<Ref(C,-1), 1,0);
+
+/* Evening Doji Star [Bear] */
+EDS = IIf(Ref(White, -2) AND Ref(Doji, -1) AND Black AND
+C<=Ref(((H+L)/2),-2), 1,0);
+
+/* Morning Doji Star [Bull] */
+MDS = IIf(Ref(Black, -2) AND Ref(Doji, -1) AND White AND
+C>=Ref(((H+L)/2),-2), 1,0);
+
+/* Hammer [Bull] */
+HAM = IIf( (H-L > 1.5*AvgRange) AND (C > (H+L)/2) AND (O > C) AND
+(VolumeIdx > 2), 1, 0);
+
+/* Bearish Engulfing */
+BRE = IIf(Black AND Ref(White, -1) AND (C < Ref(O, -1)) AND (O > Ref(C, -1)),
+1,0);
+
+/* Bullish Engulfing */
+BLE = IIf(White AND Ref(Black, -1) AND (C > Ref(O,-1)) AND (O < Ref(C,-1)),
+1,0);
+
+
+/* Stochastics 14-4 */
+
+ss = MA(StochK(14),4);
+StochBuy = IIf(ss<=20, 1, 0);
+StochSell = IIf(ss>=80, 1, 0);
+
+/* TDREI */
+HighMom = H - Ref( H, -2 );
+LowMom = L - Ref( L, -2 );
+Cond1 = ( H >= Ref( L,-5) OR H >= Ref( L, -6 ) );
+Cond2 = ( Ref( H, -2 ) >= Ref( C, -7 ) OR Ref( H, -2 ) >= Ref( C, -8 ) );
+Cond3 = ( L <= Ref( H, -5 ) OR L <= Ref( H, -6) );
+Cond4 = ( Ref( L, -2 ) <= Ref( C, -7 ) OR Ref( L, -2 ) <= Ref( C, -8 ) );
+Cond = ( Cond1 OR Cond2 ) AND ( Cond3 OR Cond4 );
+Num = IIf( Cond, HighMom + LowMom, 0 );
+Den = abs( HighMom ) + abs( LowMom );
+TDREI = 100 * Sum( Num, 5 )/Sum( Den, 5 ) ;
+tdreiBuy = IIf(TDREI<=-95, 1, 0);
+tdreiSell = IIf(TDREI>=95, 1, 0);
+
+/* KUP */
+KUP=EMA((H+L+C)/3,10)+EMA(H-L,10);
+KDOWN=EMA((H+L+C)/3,10)-EMA(H-L,10);
+kupBuy = IIf(Cross(C,KDOWN), 1, 0);
+kupSell = IIf(Cross(KUP,C), 1, 0);
+
+/*RSI*/
+vrsi= RSI(14);
+rsiBuy = IIf(Cross(vrsi,30), 1, 0);
+rsiSell = IIf(Cross(70,vrsi), 1, 0);
+
+/*MFI*/
+mfiBuy = IIf(Cross(MFI(),30), 1, 0);
+mfiSell = IIf(Cross(70,MFI()), 1, 0);
+
+/*STO2*/
+lookback = 14;
+buyrange = 30;
+sellrange = 70;
+stochKworkaround = StochK(14);
+stochDworkaround = EMA( StochK(14), 5);
+sto2Buy = IIf(StochK(14) < buyrange AND Cross(stochKworkaround,
+stochDworkaround), 1, 0);
+sto2Sell = IIf(StochK(14) > sellrange AND Cross(stochDworkaround,
+stochKworkaround), 1, 0);
+
+/*MACD SIGNAL CROSS*/
+macdBuy = Cross(MACD(), EMA(MACD(),9));
+macdSell = Cross(EMA(MACD(),9), MACD());
+
+
+/* %R, ema 9 and divergences */
+
+R=-100*((HHV(High,14)-Close))/(HHV(High,14)-LLV(Low,14));
+DIVR=(R-Ref(R,-1))*(C-Ref(C,-1));
+DIVB=IIf((DIVR<0) AND (R-Ref(R,-1))>0 AND (Ref(R,-1)<-90),-100,0);
+DIVB1=IIf((DIVR<0) AND (R-Ref(R,-1))>0 AND (Ref(R,-1)<-90),-80,0);
+DIVS=IIf((DIVR<0) AND (R-Ref(R,-1))<0 AND (Ref(R,-1)>-10),-20,0);
+divBuy = IIf(DIVB==-100, 1, 0);
+divSell = IIf(DIVS==-20, 1, 0);
+
+/*KST*/
+
+KST = (MA(ROC(Close,10),10) * 1) +
+(MA(ROC(Close,15),10) * 2) +
+(MA(ROC(Close,20),10) * 3) +
+(MA(ROC(Close,30),15) * 4);
+kstBuy = IIf(Cross(KST , MA(KST, 109)), 1, 0);
+kstSell = IIf(Cross(MA(KST , 120), KST), 1, 0);
+
+/*COP*/
+copBuy = IIf((EMA( ROC( MA( C, 22 ), 250 ), 150 ) / 100) < 0, 1, 0);
+
+/*SMASH*/
+numDays = 3; // Consider smash Day if closed above/below previous numDays highs/lows
+closeInDayRangePct = 0.25; // Smash day close should be in the high/low %% of the Day range
+smashDayDown = Close < LLV (Ref (Low, -1), numDays) AND Close < Open AND Close
+< (Low + closeInDayRangePct * (High - Low));
+smashDayUp = Close > HHV (Ref (High, -1), numDays) AND Close > Open AND Close >
+(High - closeInDayRangePct * (High - Low));
+// Enter in the direction opposite to the smash day if the very next day price moves opposite the smash Day.
+smashBuy = IIf(Ref (smashDayDown, -1) AND High > Ref (High, -1), 1, 0);
+smashSell = IIf(Ref (smashDayUp, -1) AND Low < Ref (Low, -1), 1, 0);
+
+/*CHAIKIN MONEY FLOW*/
+ICH = Sum(((( C-L )-( H-C )) / ( H-L ))*V, 21 ) / Sum(V,21);
+LCH = LLV( ICH, 255 );
+top = (LCH/2);
+chkBuy = Cross (ICH, top);
+chkSell = Cross (0, ICH);
+
+/*number of buy signals --- give weight to your favorite ones with a
+coefficient. */
+somme= PL + MDS + HAM + BLE + tdreiBuy + kupBuy + rsiBuy + (2*mfibuy) + sto2Buy
++ (2*divBuy) + kstBuy + copBuy + (2*smashBuy) + chkBuy;
+
+/*number of sell signals. */
+somme2 = BRE + DCC + EDS + tdreiSell + kupSell + rsiSell + mfiSell + sto2Sell +
+divSell + divSell + kstSell + smashSell + chkSell;
+
+/*Guru comment*/
+"number of buy indicators triggered: " + WriteVal (somme) ;
+"Aujourd'hui, les signaux haussiers suivants ont été déclenchés: ";
+
+/* Buy / sell thresholds */
+BuyThreshold = Param( "BuyThreshold",6,0,10,1);
+//BuyThreshold = Optimize( "BuyThreshold",6,0,10,1);
+//BuyThreshold = 6;
+
+SellThreshold = Param( "SellThreshold",5,0,10,1);
+//SellThreshold = Optimize( "SellThreshold",5,0,10,1);
+//SellThreshold = 5;
+
+/* Exploration Columns for Sorting */
+AddColumn(V,"Volume",1.0);
+AddColumn(VolumeIdx,"Vol Idx",1.1);
+AddColumn(somme,"Buy sign",1.2,colorDefault,IIf(somme < BuyThreshold,colorDefault,colorGreen) );
+AddColumn(somme2,"Sell sign",1.2,colorDefault,IIf(somme2 < SellThreshold,colorDefault,colorRed) );
+AddColumn(IIf(PL, 66,01 ),"Piercing",formatChar, colorGreen );
+AddColumn(IIf(MDS, 66, IIf(EDS, 83,01 )),"Doji Star",formatChar, IIf(eds,colorRed,colorGreen) );
+AddColumn(IIf(BLE, 66, IIf(BRE, 83,01 )),"Engulfing",formatChar, IIf(bre,colorRed,colorGreen) );
+AddColumn(IIf(Ham, 66,01 ),"Hammer",formatChar, colorGreen );
+AddColumn(IIf(DCC, 83,01 ),"Dark Cloud Cover",formatChar, colorRed);
+AddColumn( IIf(tdreiBuy, 66, IIf(tdreiSell, 83,01 )), "TDREI", formatChar, IIf(tdreisell,colorRed,colorGreen) );
+AddColumn( IIf(kupbuy, 66, IIf(kupSell, 83,01 )), "Keltner", formatChar, IIf(kupsell,colorRed,colorGreen) );
+AddColumn( IIf(rsiBuy, 66, IIf(rsiSell, 83,01 )), "RSI", formatChar, IIf(rsisell,colorRed,colorGreen) );
+AddColumn( IIf(mfiBuy, 66, IIf(mfiSell, 83,01 )), "MFI", formatChar, IIf(mfisell,colorRed,colorGreen) );
+AddColumn( IIf(sto2Buy, 66, IIf(sto2Sell, 83,01 )), "Stoc", formatChar, IIf(sto2sell,colorRed,colorGreen) );
+AddColumn( IIf(divBuy, 66, IIf(divSell, 83,01 )), "%R", formatChar, IIf(divsell,colorRed,colorGreen) );
+AddColumn( IIf(kstBuy, 66, IIf(kstSell, 83,01 )), "KST", formatChar, IIf(kstsell,colorRed,colorGreen) );
+AddColumn( IIf(Copbuy, 66,01 ),"Coppock",formatChar, colorGreen );
+AddColumn( IIf(smashBuy, 66,IIf(smashSell, 83,01 )), "Smash day", formatChar, IIf(smashsell,colorRed,colorGreen) );
+AddColumn( IIf(chkBuy, 66, IIf(chkSell, 83,01 )), "Chaikin Money", formatChar, IIf(chksell,colorRed,colorGreen) );
+AddColumn( IIf(macdBuy, 66, IIf(macdSell, 83,01 )), "MACD", formatChar, IIf(macdsell,colorRed,colorGreen) );
+
+
+
+/* Filter */
+/*the highest % for somme gives the most reliable buy signal*/
+Filter = (somme >= BuyThreshold AND VolumeIdx>=2) OR (somme2 >= SellThreshold AND VolumeIdx>=2) ;
+/*Filter = ((C > minPrice) AND (VolAvg >= minVol)) AND (StochBuy AND (PL or MDS
+or BLE or HAM)) OR (StochSell AND (BRE or DCC or EDS));*/
+
+
+/* Buy and Sell */
+Buy = somme>=BuyThreshold; //6
+Sell = somme2>=SellThreshold; //3
+WriteVal (somme);
+
+/* to use as indicator */
+
+Plot( somme, "buy", colorGreen, styleLine|styleOwnScale );
+Plot( somme2, "sell", colorRed, styleLine|styleOwnScale );
+Plot( Filter, "deal", colorBlue, styleLine|styleOwnScale );

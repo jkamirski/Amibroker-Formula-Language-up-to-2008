@@ -1,0 +1,18 @@
+//An n Bar Reversal Program
+//The theory says that this indicator gives reliable signals of strong trends.
+//Its disadvantage is that the signal can be a little late, but is offset by
+//its reliability.
+// An uptrend is assumed to be in place if todays high is higher than those
+// of the previous n days,and a downtrend is in place when todays low is lower
+
+//than those of the previous n days. Otherwise the existing trend persists.
+//n is commonly set at 3 but can be any value.
+//The implementation here simply shows arrows at trend reversals.
+
+n= Param("No. of Bars",3,2,8,1);
+TrendUp = H > Ref(HHV(H,n),-1);
+TrendDn = L < Ref(LLV(L,n),-1);
+TrendUp = ExRem(TrendUp,TrendDn);
+TrendDn = ExRem(TrendDn,TrendUp);
+PlotShapes(TrendUp*shapeUpArrow,colorGreen);
+PlotShapes(TrendDn*shapeDownArrow,colorRed);

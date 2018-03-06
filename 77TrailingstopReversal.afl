@@ -1,0 +1,27 @@
+stop = Param("Trailing Stop", 7, 0, 20 );
+
+trail = Null;
+
+for( i = 1; i < BarCount; i++ )
+{
+prev = trail[ i - 1 ];
+Cur = 0;
+if( prev == C[ i ] )
+Cur = prev;
+else
+if( C[ i - 1 ] < prev AND C[ i ] < prev )
+Cur = Min( prev, C[ i ] * ( 1 + stop/100 ) );
+else
+if( C[ i - 1 ] > prev AND C[ i ] > prev )
+Cur = Max( prev, C[ i ] * ( 1 - stop/100 ) );
+else
+if( C[ i ] > prev )
+Cur = C[ i ] * ( 1 - stop/100 );
+else
+Cur = C[ i ] * ( 1 + stop/100 );
+
+trail[ i ] = Cur;
+}
+
+Plot( C, "Price", colorBlack );
+Plot( trail, "Trailstop", colorRed );

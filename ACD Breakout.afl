@@ -1,0 +1,109 @@
+// ACD Plot
+// LSMA is Linreg
+// ACD.afl
+// v 1.2 9/13/2004
+// plots ACD levels and pivot range from daily
+
+SetChartBkColor(colorWhite);
+
+Per = Param("Periods",13);
+Per2 = Param("Periods 2",34);
+LSMAPer = Param("LMSA Period",25);
+Offset = Param("A Level",1);
+ACDFlag = 0;
+IntervalFlag = IIf(Interval(format=0)==300,1,0);
+
+strInterval = Interval(format=2);
+
+strWeekday = StrMid("SunMonTueWedThuFriSat", SelectedValue(DayOfWeek())*3,3);
+
+
+if( StrFind( Name(), "FW20U8" ) )
+ {
+ ACDOffset = 10;
+ ACDFlag = 1;
+ ACDTime = 93000;
+ }
+
+if( StrFind( Name(), "ER" ) )
+ {
+ ACDOffset = 0.5;
+ ACDFlag = 1;
+ ACDTime = 93500;
+
+ }
+if( StrFind( Name(), "ES" ) )
+ {
+ ACDOffset = 2;
+ ACDFlag = 1;
+ ACDTime = 94500;
+
+ }
+
+if( StrFind( Name(), "NQ" ) )
+ {
+ ACDOffset = 3;
+ ACDFlag = 1;
+ ACDTime = 94500;
+
+ }
+
+if( StrFind( Name(), "ZB" ) )
+ {
+ ACDOffset = 0.15;
+ ACDFlag = 1;
+ ACDTime = 83000;
+
+ }
+
+if( StrFind( Name(), "ZN" ) )
+ {
+ ACDOffset = 0.15;
+ ACDFlag = 1;
+ ACDTime = 83000;
+
+ }
+
+
+
+GraphXSpace = 1;
+Shift = 2;
+
+// calculate the pivot range
+PDH = TimeFrameGetPrice( "H", inHourly, -1 ); // gives previous Day High when working on intraday data
+PDL = TimeFrameGetPrice( "L", inHourly, -1 );
+PDC = TimeFrameGetPrice( "C", inHourly, -1 );
+PP = (PDH+PDL+PDC)/3;
+
+DIFF = abs((PDH+PDL)/2 - PP);
+PRHi = PP + DIFF;
+PRLo = PP - DIFF;
+
+EMA1 = EMA(Avg,Per);
+EMA2 = EMA(Avg,Per2);
+LSMA = LinearReg(Avg, LSMAPer);
+
+Plot(C, "Close",colorBlack,styleCandle);
+
+
+if ((ACDFlag) AND (IntervalFlag)) {
+
+ORHigh=
+ValueWhen(TimeNum()<ACDTime,HighestSince(DateNum()>Ref(DateNum(),-1),High));
+ORLow = ValueWhen(TimeNum()<ACDTime,LowestSince(DateNum()>Ref(DateNum(),-1), Low));
+
+Plot(PRHi,"PRHigh",colorPink,styleDots+styleNoLine+styleNoLabel);
+Plot(PRLo,"PRLow",colorCustom14,styleDots+styleNoLine+styleNoLabel);
+Plot(ORHigh,"ORHigh",colorBlue,style=styleStaircase+styleDots+styleNoLine+styleNoLabel);
+Plot(ORLow,"ORLow",colorBlue,style=styleStaircase+styleDots+styleNoLine+styleNoLabel);
+Plot(ORHigh+ACDOffset,"AUp",colorYellow,style=styleStaircase+styleDots+styleNoLine);
+Plot(ORLow-ACDOffset,"ADn",colorYellow,style=styleStaircase+styleDots+styleNoLine);
+// Plot(LSMA, "LSMA", colorYellow,style=styleThick);
+
+}
+
+Title=Name()+" ["+strInterval+"] "+ strWeekday + " " +Date()+ " Close:
+"+WriteVal(C,format=1.2) +" "+WriteVal(per,format=1.0)+"-Per MA: "
++WriteVal(EMA1,format=1.2)+" " + WriteVal(per2,format=1.0)+"-Per MA: "
++WriteVal(EMA2,format=1.2) + " PR High: "+WriteVal(PRHi,format=1.2) + " PR
+Low: "+WriteVal(PRLo,format=1.2)  ;

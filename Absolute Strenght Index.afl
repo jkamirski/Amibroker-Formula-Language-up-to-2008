@@ -1,0 +1,30 @@
+/*Developed by Tudor Marcelin - Art Invest*/
+/*Description: It's similar with RSI, but has an advantage: in the strong trend market, the indicator don't stay at 0 or 100 (the limits).*/
+n=Param("n",10,0,100,1); /*period*/
+
+    A=0;
+    M=0;
+    D=0;
+
+  for( i = 0; i < 10; i=i+1 ) 
+{
+
+    A=IIf(Ref(Close, - i)>Ref(Close, - i-1), A+(Ref(Close, - i)/Ref(Close, -
+i-1))-1,A);
+
+    M=IIf(Ref(Close, - i)==Ref(Close, - i-1), M+1/n,M);
+
+    D=IIf(Ref(Close, - i)<Ref(Close, - i-1), D+(Ref(Close, - i-1)/Ref(Close, -
+i))-1,D);
+        
+ }  
+ ASI=IIf (D+M/2==0, 100, 100-100/(1+(A+M/2)/(D+M/2)));
+
+
+  Plot(ASI,"ASI10",colorDarkBlue); 
+  
+  Plot(50,"",colorBlack,styleLine);
+  Plot(70,"",colorGreen,styleLine);    
+  Plot(30,"",colorRed,styleLine);  
+
+GraphXSpace = 3;

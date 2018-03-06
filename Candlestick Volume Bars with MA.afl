@@ -1,0 +1,10 @@
+upbar = C > Ref(C,-1);
+downbar = C< Ref(C,-1);
+barcolor=IIf(downbar, 4, IIf(upbar, 5,19) );
+O = IIf(downbar, V, 0); 
+C = IIf(downbar, 0, V);
+L=0; H = V;
+Graph2=C; 
+Graph2Style=64;
+Graph2BarColor=barcolor;
+Graph1=MA(Volume,16); /* Matches with default volume indicator in AMI

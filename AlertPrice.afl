@@ -1,0 +1,11 @@
+Cenago=Param("cenago",1700,1,5000,1);
+Cenado=Param("cenado",1700,1,5000,1);
+
+gora = Cross(C, Cenago) AND Name()=="FW20Z08";
+dol = Cross(1810,Cenado) AND Name()=="FW20Z08";
+//AlertIf( Buy, "", "Simple text alert", 4 );
+
+
+AlertIf( gora, "SOUND C:\\Windows\\Media\\Notify.WAV", "Audio alert", 1+2 );
+AlertIf( dol, "SOUND C:\\Windows\\Media\\Notify.WAV", "Audio alert", 1+2 );
+ 

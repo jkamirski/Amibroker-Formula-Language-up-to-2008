@@ -1,0 +1,599 @@
+_SECTION_BEGIN("CANDLE REWORKING combination of Meta TC TS");
+O1 = Ref(O,-1);O2 = Ref(O,-2);O3 = Ref(O,-3);O4 = Ref(O,-4);
+H1 = Ref(H,-1);H2 = Ref(H,-2);H3 = Ref(H,-3);H4 = Ref(H,-4);
+C1 = Ref(C,-1);C2 = Ref(C,-2);C3 = Ref(C,-3);C4 = Ref(C,-4);
+L1 = Ref(L,-1);L2 = Ref(L,-2);L3 = Ref(L,-3);L4 = Ref(L,-4);
+
+GraphXSpace = 5;
+
+/*UP and Down Trend of last 4 days*/
+
+dtrend = (L1 < L2)AND (L2 < L3) AND (L3 < L4);
+utrend = (H1 > H2)AND (H2 > H3) AND (H3 > H4);
+
+/*Maximum High Today - (MHT)
+Today is the maximum High in the last 5 days*/
+MHT=  HHV(H,5)==H;
+
+/*Maximum High Yesterday - (MHY)
+Yesterday is the maximum High in the last 5 days*/
+MHY=   HHV(H,5)==Ref ( H, -1);
+
+/*Minimum Low Today - (MLT)
+Today is the minimum Low in the last 5 days*/
+MLT=   LLV(L,5)==L;
+
+/*Minimum Low Yesterday - (MLY)
+Yesterday is the minimum Low in the last 5 days*/
+MLY=   LLV(L,5)==Ref(L,-1);
+
+/*Peircing Percent*/
+
+PiercingPercent = ((C - C1)/C1) * 100;
+
+
+
+
+
+
+
+
+
+
+Doji  = (abs(O-C)<= ((H-L)*0.1)); 
+
+BlackCandle = (O>C); 
+
+LongBlackCandle = (O>C AND (O-C)/(.001+H-L)>.6); 
+
+SmallBlackCandle = ((O>C) AND ((H-L)>(3*(O-C)))); 
+
+WhiteCandle = (C>O); 
+
+LongWhiteCandle  = ((C>O) AND ((C-O)/(.001+H-L)>.6)); 
+
+SmallWhiteCandle = ((C>O) AND ((H-L)>(3*(C-O))));
+
+BlackMaubozu = (O>C AND H==O AND C==L);
+
+WhiteMaubozu = (C>O AND H==C AND O==L);
+
+BlackClosingMarubozu  = (O>C AND C==L);
+
+WhiteClosingMarubozu = (C>O AND C==H);
+
+BlackOpeningMarubozu = (O>C AND O==H);
+
+WhiteOpeningMarubozu = (C>O AND O==L);
+
+OpenGap = ((C1 - O)/O) * 100;
+
+CloseGap = ((O - C1)/C1) * 100;
+
+
+
+
+
+///////************************************** Engulfings ********************************************//////////////
+BullishEngulfing  = (LongWhiteCandle AND dtrend AND (O1>C1) AND (C>O) AND (C>= O1) AND (C1>= O) AND ((C-O)>(O1-C1))); 
+
+
+
+
+_SECTION_BEGIN("");
+BI = BarIndex();
+BV = BeginValue(BarIndex());
+EV = EndValue(BarIndex());
+SV = SelectedValue(BarIndex());
+
+BuWholeEngulf = 0;					
+CurrentBar = SelectedValue( BarIndex() ); 
+FirstBullBar = CurrentBar - 30;
+Bar = CurrentBar;
+
+do
+{
+if ( SelectedValue(Close) >= ( Open[Bar-1]) AND SelectedValue(Close) >= ( Close[Bar-1]) AND SelectedValue(Open) <= ( Open[Bar-1]) AND SelectedValue(Open) <= ( Close[Bar-1]) )
+		{
+				BuWholeEngulf = BuWholeEngulf + 1; 
+			    Bar--;  
+		}
+      
+}
+while( Bar> FirstBullBar  AND   SelectedValue(Close) >= ( Open[Bar-1]) AND SelectedValue(Close) >= ( Close[Bar-1]) AND SelectedValue(Open) <= ( Open[Bar-1]) AND SelectedValue(Open) <= ( Close[Bar-1]));
+_SECTION_END();
+
+
+_SECTION_BEGIN("");
+
+ 
+
+
+
+
+		
+
+BearishEngulfing  = (MHT AND utrend  AND LongBlackCandle AND (C1>O1) AND (O>C) AND (O>= C1) AND (O1>= C) AND ((O-C)>(C1-O1)));
+
+
+
+_SECTION_BEGIN("");
+BI = BarIndex();
+BV = BeginValue(BarIndex());
+EV = EndValue(BarIndex());
+SV = SelectedValue(BarIndex());
+
+BeWholeEngulf = 0;					
+CurrentBar = SelectedValue( BarIndex() ); 
+FirstBearBar = CurrentBar - 30;
+Bar = CurrentBar;
+
+do
+{
+
+if ( SelectedValue(Close) <= ( Open[Bar-1]) AND SelectedValue(Close) <= ( Close[Bar-1]) AND SelectedValue(Open) >= ( Open[Bar-1]) AND SelectedValue(Open) >= ( Close[Bar-1]) )
+		{
+				
+					BeWholeEngulf = BeWholeEngulf + 1; 
+				               
+ Bar--;
+		}
+      
+}
+while( Bar> FirstBearBar  AND   SelectedValue(Close) <= ( Open[Bar-1]) AND SelectedValue(Close) <= ( Close[Bar-1]) AND SelectedValue(Open) >= ( Open[Bar-1]) AND SelectedValue(Open) >= ( Close[Bar-1]));
+								 
+_SECTION_END();
+
+
+
+
+
+
+
+
+//////****************************************** Piercings ********************************************////////
+PiercingLine = (Ref(LongBlackCandle,-1) AND dtrend AND(C1<O1) AND (((O1+C1)/2)<C) AND (O<C) AND (O<C1) AND (C<O1) AND ((C-O)/(.001+(H-L))>0.6));
+
+DarkCloudCover = (MHT AND Ref(LongWhiteCandle,-1) AND utrend AND C1>O1 AND ((C1+O1)/2)>C AND O>C AND O>C1 AND C>O1 AND (O-C)/(.001+(H-L)>0.6) ); 
+
+
+///////////////**********************************Hammers *****************************************//////////////////
+
+
+dhammertrend = (L < L1) AND (L1 < L2)AND (L2 < L3) AND (L3 < L4);
+uhangingmantrend = (H > H1) AND(H1 > H2)AND (H2 > H3) AND (H3 > H4);
+
+Hammer  = (((H-L)>3*(O-C)) AND ((C-L)/(.001+H-L)>0.6) AND ((O-L)/(.001+H-L)>0.6) AND dhammertrend AND NOT Doji);
+
+/*Hammer Tails*/
+
+
+BlackHammerTail =  (C-L) / (O-C);
+
+WhiteHammerTail =  (O-L) / (C-O);
+
+
+HangingMan  = (((H-L)>4*(O-C)) AND ((C-L)/(.001+H-L)>= 0.75) AND ((O-L)/(.001+H-L)>= 0.75) AND uhangingmantrend AND NOT Doji); 
+/*HangingMan Tails*/
+
+
+BlackHangingManTail =  (C-L) / (O-C);
+
+WhiteHangingManTail =  (O-L) / (C-O);
+
+
+
+
+
+Harami=
+   IIf(O>C AND O1>C1 AND O<O1 AND C>C1,1,
+   IIf(O>C AND C1>O1 AND C>O1 AND O<C1,1,
+   IIf(C>O AND C1>O1 AND C<C1 AND O>O1,1,
+   IIf(C>O AND O1>C1 AND O>C1 AND C<O1,1,0))));
+
+
+BullishHarami = (Harami AND (O1>C1) AND Ref(LongBlackCandle,-1) AND NOT LongWhiteCandle); 
+
+
+
+
+
+
+InvertedHammer  = (((H-L)>3*(O-C)) AND ((H-C)/(.001+H-L)>0.6) AND ((H-O)/(.001+H-L)>0.6)); 
+
+ShootingStar = (((H-L)>4*(O-C)) AND ((H-C)/(.001+H-L)>= 0.75) AND ((H-O)/(.001+H-L)>= 0.75)); 
+
+BlackSpinningTop= ((O>C) AND ((H-L)>(3*(O-C))) AND (((H-O)/(.001+H-L))<.4) AND (((C-L)/(.001+H-L))<.4)); 
+
+WhiteSpinningTop = ((C>O) AND ((H-L)>(3*(C-O))) AND (((H-C)/(.001+H-L))<.4) AND (((O-L)/(.001+H-L))<.4)); 
+
+BearishAbandonedBaby = ((C1 == O1) AND (C2>O2) AND (O>C) AND (L1>H2) AND (L1>H)); 
+
+BearishEveningDojiStar = ((C2>O2) AND ((C2-O2)/(.001+H2-L2)>.6) AND (C2<O1) AND (C1>O1) AND ((H1-L1)>(3*(C1-O1))) AND (O>C) AND (O<O1)); 
+
+ 
+
+
+
+ThreeOutsideDownPattern = ((C2>O2) AND (O1>C1) AND (O1>= C2) AND (O2>= C1) AND ((O1-C1)>(C2-O2)) AND (O>C) AND (C<C1));
+
+BullishAbandonedBaby = ((C1 == O1) AND (O2>C2) AND (C>O) AND (L2>H1) AND (L>H1)); 
+
+BullishMorningDojiStar = ((O2>C2) AND ((O2-C2)/(.001+H2-L2)>.6) AND (C2>O1) AND (O1>C1) AND ((H1-L1)>(3*(C1-O1))) AND (C>O) AND (O>O1));
+
+
+
+ThreeOutsideUpPattern = ((O2>C2) AND (C1>O1) AND (C1>= O2) AND (C2>= O1) AND ((C1-O1)>(O2-C2)) AND (C>O) AND (C>C1));
+
+
+
+ThreeInsideUpPattern = ((O2>C2) AND (C1>O1) AND (C1<= O2) AND (C2<= O1) AND ((C1-O1)<(O2-C2)) AND (C>O) AND (C>C1) AND (O>O1)); 
+
+
+
+BearishHarami = ((C1>O1) AND (O>C) AND (O<= C1) AND (O1<= C) AND ((O-C)<(C1-O1))); 
+
+ThreeInsideDownPattern = ((C2>O2) AND (O1>C1) AND (O1<= C2) AND (O2<= C1) AND ((O1-C1)<(C2-O2)) AND (O>C) AND (C<C1) AND (O<O1));
+
+ThreeWhiteSoldiers = (C>O*1.01) AND (C1>O1*1.01) AND (C2>O2*1.01) AND (C>C1) AND (C1>C2) AND (O<C1) AND (O>O1) AND
+(O1<C2) AND (O1>O2) AND (((H-C)/(H-L))<.2) AND (((H1-C1)/(H1-L1))<.2) AND
+(((H2-C2)/(H2-L2))<.2);
+
+ThreeBlackCrows = (O>C*1.01) AND (O1>C1*1.01) AND (O2>C2*1.01) AND (C<C1) AND (C1<C2) AND (O>C1) AND (O<O1) AND
+(O1>C2) AND (O1<O2) AND (((C-L)/(H-L))<.2) AND (((C1-L1)/(H1-L1))<.2) AND
+(((C2-L2)/(H2-L2))<.2); 
+
+doji= (O == C); 
+Gap_Up = GapUp(); 
+Gap_Down = GapDown(); 
+BigGapUp = L>1.01*H1; 
+BigGapDown = H<0.99*L1; 
+HugeGapUp = L>1.02*H1; 
+HugeGapDown = H<0.98*L1; 
+DoubleGapUp = GapUp() AND Ref(GapUp(),-1); 
+DoubleGapDown = GapDown() AND Ref(GapDown(),-1);
+
+
+
+
+/***********************************************************************************
+                                   LABELS  
+***********************************************************************************/
+ 
+_SECTION_BEGIN("PRASAD SYSTEMS");
+Param("DEDICATED TO MY FATHER",5);
+_SECTION_END();
+
+_SECTION_BEGIN("");
+CANDLE_LABELS_TOGGLE = ParamToggle("Labels","Off|On",1);
+if(CANDLE_LABELS_TOGGLE==1)
+{
+
+for( a = 0; a < BarCount; a++ )
+{
+ 
+
+if (BullishEngulfing[a]) (PlotText("  BuE",a,H[a]+2,colorPaleGreen));
+if (PiercingLine[a]) (PlotText("PL",a,H[a]+2,colorPaleGreen));
+if (Hammer[a]) (PlotText("Hr",a,H[a]+2,colorPaleGreen));
+/*if (BullishHarami[a]) (PlotText("BH",a,H[a]+2,colorPaleGreen));*/
+
+if (BearishEngulfing[a]) (PlotText("BeE",a,H[a]+2,colorRed));
+if (DarkCloudCover[a]) (PlotText("Dc",a,H[a]+2,colorRed));
+if (HangingMan[a]) (PlotText("Hm",a,H[a]+2,colorRed));
+
+
+
+}
+}
+
+CANDLE_ARROWS_TOGGLE = ParamToggle("CANDLE ARROWS","Off|On",1);
+if(CANDLE_ARROWS_TOGGLE==1)
+{
+
+(PlotShapes(BullishEngulfing * shapeSmallUpTriangle,colorPaleGreen,0,H,10));
+(PlotShapes(PiercingLine * shapeSmallUpTriangle,colorPaleGreen,0,H,10));
+(PlotShapes(Hammer * shapeSmallUpTriangle,colorPaleGreen,0,H,10));
+/*(PlotShapes(BullishHarami * shapeSmallUpTriangle,colorPaleGreen,0,H,10));*/
+
+(PlotShapes(BearishEngulfing * shapeSmallDownTriangle,colorLightOrange,0,H,-20));
+(PlotShapes(DarkCloudCover * shapeSmallDownTriangle,colorRed,0,H,-20));
+(PlotShapes(HangingMan * shapeSmallDownTriangle,colorLightOrange,0,H,-20));
+
+}
+_SECTION_END();
+
+
+ 
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+BULL_ENG = LastValue(Cum(BullishEngulfing)); 
+printf("Bull Eng %g\n",BULL_ENG);
+PlotText( "*",BULL_ENG,H[BULL_ENG]+4, colorYellow ); 
+
+CURRENT_BULL_ENG = Ref(BullishEngulfing,0);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+PRI_CANDLE_BULLISH = WriteIf(BullishEngulfing,"Bullish Engulfing","")+ WriteIf(PiercingLine, "Piercing Line","")
++ WriteIf(Hammer,"Hammer","")+ WriteIf(BullishHarami,"Bullish Harami","");
+//+ WriteIf(dojiStarBullish,"Bullish Doji Star","") + WriteIf(breakAwayBullish,"Break Away","")
+//+ WriteIf(hammerBullish,"Hammer","") + WriteIf(dragonflyDoji,"DrangonFly Doji","")
+//+ WriteIf(HaramiCross,"Harami Cross","") + WriteIf(invertedHammer,"Inverted Hammer","")
+//+ WriteIf(meetingLinesBullish,"Meeting Lines","") + WriteIf(morningStar,"Morning Star","")
+//+ WriteIf(morningDojiStar,"Morning Doji Star","") + WriteIf(MatHoldBullish,"Mat Hold","")
+//+ WriteIf(separatingLinesBullish,"Seperating Lines","");
+
+PRI_CANDLE_BEARISH =  WriteIf(BearishEngulfing,"Bearish Engulfing","") + WriteIf(DarkCloudCover, "Dark Cloud","")
++ WriteIf(HangingMan,"Hanging Man","");
+//+ WriteIf(haramiBearish, "Bearish Harami","") + WriteIf(abandonedBabybearish,"Aband Baby","")
+//+ WriteIf(dojiStarBearish,"Bearish Doji Star","") + WriteIf(breakAwayBearish,"Break Away","")
+//+ WriteIf(HangingMan,"Hanging Man","") + WriteIf(dragonflyDojiBearish,"DrangonFly Doji","")
+//+ WriteIf(HaramiCrossBearish,"Harami Cross","") + WriteIf(shootingStarGap,"Shooting Star","")
+//+ WriteIf(MeetingLinesBearish,"Meeting Lines","") + WriteIf(eveningStar,"Evening Star","")
+//+ WriteIf(eveningDojiStar,"Evening Doji Star","") + WriteIf(separatingLinesBearish,"Seperating Lines","")
+//+ WriteIf(gravestoneDoji,"GraveStone Doji","");
+
+/******************************************************************************************
+                   CHART TITLES
+***********************************************************************************************/
+
+_SECTION_BEGIN("BACK COLR");
+
+GfxSetOverlayMode(1); 
+SetChartBkColor( ParamColor("Chart Color", colorTurquoise));
+GfxSetOverlayMode(1);
+GfxSelectFont("Tahoma", Status("pxheight")/20 ); /* Up down name*/
+GfxSetTextAlign( 6 );// center alignment
+GfxSetTextColor( ParamColor("Text Color", ColorHSB( 42, 42, 42 ) ));
+GfxSetBkMode(0); // transparent
+GfxTextOut( Name(), Status("pxwidth")/2, Status("pxheight")/7);
+GfxSelectFont("Tahoma", Status("pxheight")/30 );
+GfxTextOut( IndustryID(1), Status("pxwidth")/2, Status("pxheight")/5 );  /* Up Down Sector*/
+
+GfxSelectFont("Tahoma", Status("pxheight")/40 );
+GfxTextOut( "Feedback prasad9rao@gmail.com", Status("pxwidth")/2, Status("pxheight")/4);
+GfxSelectFont("Tahoma", Status("pxheight")/20 );
+GfxTextOut( " BALKRISHNA CANDLE CHARTS ", Status("pxwidth")/2, Status("pxheight")/15 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+k = (GetPerformanceCounter()/100)%256; 
+printf("GetPerformance Counter %g",k);
+
+
+GfxSelectFont("Arial Narrow", 10, 700 ); 
+GfxSetBkMode(1); 
+GfxSetTextColor(colorYellow); 
+GfxTextOut("Dedicated to the loving memory of MY FATHER on his 75th Birth  Anniversay - LATE BALKRISHNA RAMCHANDRA RAO 13.10.1935",100+k ,12); 
+GfxSelectFont("Century Goliath",12,500); 
+GfxSetBkMode(1); 
+GfxSetTextColor(colorLime); 
+GfxTextOut("Prasad Inspirations",80 ,25); 
+RequestTimedRefresh(1); 
+_SECTION_END();
+
+SetBarFillColor( IIf(O>C,colorOrange, colorDarkGreen ) ); 
+Plot( C, "Price", IIf( O>C,colorRed, colorGreen ), styleCandle );
+
+Plot(C,"Close",colorWhite,64);
+Chg=Ref(C,-1);
+Title = EncodeColor(colorYellow)+  Title = Name() + "    " + EncodeColor(2) + Date() +EncodeColor(11) + EncodeColor(colorWhite) + "{{INTERVAL}}  " +
+   EncodeColor(55)+ "   Open:  "+ EncodeColor(colorWhite)+ WriteVal(O,format=1.2) + 
+   EncodeColor(55)+ "   High:  "+ EncodeColor(colorWhite) + WriteVal(H,format=1.2) +
+   EncodeColor(55)+ "   Low:  "+ EncodeColor(colorWhite)+ WriteVal(L,format=1.2) + 
+   EncodeColor(55)+ "   Close:  "+ WriteIf(C> Chg,EncodeColor(colorBrightGreen),EncodeColor(colorRed))+ WriteVal(C,format=1.2)+  
+   EncodeColor(55)+ "   Change:  "+ WriteIf(C> Chg,EncodeColor(colorBrightGreen),EncodeColor(colorRed))+ WriteVal(ROC(C,1),format=1.2)+ "%"+
+   EncodeColor(55)+ "   Volume: "+ EncodeColor(colorWhite)+ WriteVal(V,1)
+
+
+
++"\n"+"\n"
+
++"\n"+EncodeColor(colorWhite)+"> Candle           : "+EncodeColor(colorBrightGreen)+PRI_CANDLE_BULLISH + 
+
+EncodeColor(colorRed)+PRI_CANDLE_BEARISH + EncodeColor(colorRed)+"."+
+
+
+"\n"+/***********************************************************************************************
+Standards of Cover (Moderate and low Reliability)
+/****************************************************************************************************/
+EncodeColor(colorOrange)+
+WriteIf(BullishEngulfing,"> Prior Trend    " + EncodeColor(colorWhite) + ": Bearish.\n"+
+EncodeColor(colorOrange)+"> Type                " + EncodeColor(colorWhite) + ": Reversal.\n"+
+EncodeColor(colorOrange)+"> Confirmation " + EncodeColor(colorWhite) + ": Required.\n"+"\n"+
+EncodeColor(colorLightBlue)+"> IMPORTANT FACTORS   " + EncodeColor(colorWhite) + "\n"+
+EncodeColor(colorYellow)+"1) Disparity of white vs black body is indicative of the\n     emerging bull power.\n" +
+"2) Higher probability of reversal if there is heavy\n     volume on the day of second real body.\n" +
+"3) Higher probability of reversal if the second day\n     body engulfs more than one real body. \n" +
+"4) Greater the open gaps down from previous close\n     greater the probability of strong reversal. \n" +
+"5) If engulfing body engulfs body and shadow of the\n     previous day may be probability of strong reversal. \n \n" +
+
+EncodeColor(colorPink)+" > CONFIRMATION :\n Third Day Confirmation needed in form of a \na)  white candle ,\nb)  large gap up or \nc)  higher close.\n\n" +
+EncodeColor(colorRed)+" > CURRENT CANDLE\n"+
+EncodeColor(colorAqua)+" *  The gap down opening of the current candle is\n     "+Prec(OpenGap,1)+" % from previous Day.\n" +
+"*  The current white body is engulfing the\n    preceeding "+BuWholeEngulf+" bodies","")+
+
+
+
+
+EncodeColor(colorOrange)+
+WriteIf(BearishEngulfing,"> Prior Trend    " + EncodeColor(colorWhite) + ": Bullish.\n"+
+EncodeColor(colorOrange)+"> Type                " + EncodeColor(colorWhite) + ": Reversal.\n"+
+EncodeColor(colorOrange)+"> Confirmation " + EncodeColor(colorWhite) + ": Required.\n"+"\n"+
+EncodeColor(colorLightBlue)+"> IMPORTANT FACTORS   " + EncodeColor(colorWhite) + "\n"+
+EncodeColor(colorYellow)+"1) Disparity of black vs white body is indicative of the\n     emerging bear power.\n" +
+"2) Higher probability of reversal if there is heavy\n     volume on the day of second real body.\n" +
+"3) Higher probability of reversal if the second day\n     body engulfs more than one real body. \n" +
+"4) Greater the open gaps up from previous close\n     greater the probability of strong reversal. \n" +
+"5) If engulfing body engulfs body and shadow of the\n     previous day may be probability of strong reversal. \n \n" +
+
+EncodeColor(colorPink)+" > CONFIRMATION :\n Third Day Confirmation needed in form of a \na)  black candle ,\nb)  large gap down or \nc)  lower close.\n\n" +
+EncodeColor(colorRed)+" > CURRENT CANDLE\n"+
+EncodeColor(colorAqua)+" *  The gap up opening of the current candle is\n     "+Prec(CloseGap,1)+" % from previous Day.\n" +
+"*  The current black body is engulfing the\n    preceeding "+BeWholeEngulf+" bodies","") +
+
+
+
+
+EncodeColor(colorOrange)+
+WriteIf(PiercingLine,"> Prior Trend    " + EncodeColor(colorWhite) + ": Bearish.\n"+
+EncodeColor(colorOrange)+"> Type                " + EncodeColor(colorWhite) + ": Reversal.\n"+
+EncodeColor(colorOrange)+"> Confirmation " + EncodeColor(colorWhite) + ": Required.\n"+"\n"+
+EncodeColor(colorLightBlue)+"> IMPORTANT FACTORS   " + EncodeColor(colorWhite) + "\n"+
+EncodeColor(colorYellow)+"1) Higher the white candle closes into the\n     black candle stronger the reversal.\n" +
+"2) Higher probability of reversal if there is heavy\n     volume during first and second real body days.\n" +
+"3) Greater the gap down from previous day close\n     more pronounced the signal. \n \n" +
+
+EncodeColor(colorPink)+" > CONFIRMATION :\n Third Day Confirmation needed in form of a \na)  white candle ,\nb)  large gap up or \nc)  higher close.\n\n" +
+EncodeColor(colorRed)+" > CURRENT CANDLE\n"+
+EncodeColor(colorAqua)+" *  The gap down opening of the current candle is\n     "+OpenGap+" % from previous Day.\n" +
+"*  The current white body penetrates\n "+Prec(PiercingPercent,1)+" above the preceding day candle","") +
+
+
+
+EncodeColor(colorOrange)+
+WriteIf(DarkCloudCover,"> Prior Trend    " + EncodeColor(colorWhite) + ": Bullish.\n"+
+EncodeColor(colorOrange)+"> Type                " + EncodeColor(colorWhite) + ": Reversal.\n"+
+EncodeColor(colorOrange)+"> Confirmation " + EncodeColor(colorWhite) + ": Required.\n"+"\n"+
+EncodeColor(colorLightBlue)+"> IMPORTANT FACTORS   " + EncodeColor(colorWhite) + "\n"+
+EncodeColor(colorYellow)+"1) Black candle penetrates deeper into\n     previous day white candle.\n" +
+"2) More than 50% penetration of black \n     candle close into prior white candle.\n" +
+"3) If both candles are morabozu then\n     black candle acts as a resistance. \n \n" +
+
+EncodeColor(colorPink)+" > CONFIRMATION :\n Third Day Confirmation needed in form of a \na)  black candle ,\nb)  large gap down or \nc)  lower close.","")+
+
+
+
+EncodeColor(colorOrange)+
+WriteIf(Hammer AND BlackCandle,"> Prior Trend    " + EncodeColor(colorWhite) + ": Bearish.\n"+
+EncodeColor(colorOrange)+"> Type                " + EncodeColor(colorWhite) + ": Reversal.\n"+
+EncodeColor(colorOrange)+"> Confirmation " + EncodeColor(colorWhite) + ": Definitely Required.\n"+"\n"+
+EncodeColor(colorLightBlue)+"> IMPORTANT FACTORS   " + EncodeColor(colorWhite) + "\n"+
+EncodeColor(colorYellow)+"1) The longer the lower shadow the\n     higher the potential of reversal.\n" +
+"2) A gap down from the previous days close\n     sets up for a strong reversal.\n" +
+"3) Bullish Dragonfly Doji is considered\n     is considered more bullish.\n\n" +
+EncodeColor(colorPink)+" > CONFIRMATION :\n Next Day Confirmation needed in form of a \na)  white candle ,\nb)  large gap up or \nc)  higher close.\n \n" +
+
+EncodeColor(colorRed)+" > CURRENT CANDLE\n" +
+EncodeColor(colorAqua)+" *  The tail of the Bullish Hammer\n     is "+Prec(BlackHammerTail,1)+" times the its body.","")+
+
+
+
+EncodeColor(colorOrange)+
+WriteIf(Hammer AND WhiteCandle,"> Prior Trend    " + EncodeColor(colorWhite) + ": Bearish.\n"+
+EncodeColor(colorOrange)+"> Type                " + EncodeColor(colorWhite) + ": Reversal.\n"+
+EncodeColor(colorOrange)+"> Confirmation " + EncodeColor(colorWhite) + ": Definitely Required.\n"+"\n"+
+EncodeColor(colorLightBlue)+"> IMPORTANT FACTORS   " + EncodeColor(colorWhite) + "\n"+
+EncodeColor(colorYellow)+"1) The longer the lower shadow the\n     higher the potential of reversal.\n" +
+"2) A gap down from the previous days close\n     sets up for a strong reversal.\n" +
+"3) Bullish Dragonfly Doji is considered\n     is considered more bullish.\n\n" +
+EncodeColor(colorPink)+" > CONFIRMATION :\n Next Day Confirmation needed in form of a \na)  white candle ,\nb)  large gap up or \nc)  higher close.\n \n" +
+
+EncodeColor(colorRed)+" > CURRENT CANDLE\n" +
+EncodeColor(colorAqua)+" *  The tail of the Bullish Hammer\n     is "+Prec(WhiteHammerTail,1)+" times the its body.","") +
+
+
+
+
+
+EncodeColor(colorOrange)+
+WriteIf(HangingMan AND BlackCandle,"> Prior Trend    " + EncodeColor(colorWhite) + ": Bullish.\n"+
+EncodeColor(colorOrange)+"> Type                " + EncodeColor(colorWhite) + ": Reversal.\n"+
+EncodeColor(colorOrange)+"> Confirmation " + EncodeColor(colorWhite) + ": Definitely Required.\n"+"\n"+
+EncodeColor(colorLightBlue)+"> IMPORTANT FACTORS   " + EncodeColor(colorWhite) + "\n"+
+EncodeColor(colorYellow)+"1) The higher the lower shadow the\n     higher the potential of reversal.\n" +
+"2) A gap up from the previous days close\n     sets up for a strong reversal.\n" +
+"3) Bearish Dragonfly Doji is considered\n     is considered more bullish.\n\n" +
+EncodeColor(colorPink)+" > CONFIRMATION :\n Next Day Confirmation needed in form of a \na)  black candle ,\nb)  large gap down or \nc)  lower close.\n \n" +
+
+EncodeColor(colorRed)+" > CURRENT CANDLE\n" +
+EncodeColor(colorAqua)+" *  The tail of the Hanging Man\n     is "+Prec(BlackHangingManTail,1)+" times the its body.","")+
+
+
+
+
+
+EncodeColor(colorOrange)+
+WriteIf(HangingMan AND WhiteCandle,"> Prior Trend    " + EncodeColor(colorWhite) + ": Bullish.\n"+
+EncodeColor(colorOrange)+"> Type                " + EncodeColor(colorWhite) + ": Reversal.\n"+
+EncodeColor(colorOrange)+"> Confirmation " + EncodeColor(colorWhite) + ": Definitely Required.\n"+"\n"+
+EncodeColor(colorLightBlue)+"> IMPORTANT FACTORS   " + EncodeColor(colorWhite) + "\n"+
+EncodeColor(colorYellow)+"1) The higher the lower shadow the\n     higher the potential of reversal.\n" +
+"2) A gap up from the previous days close\n     sets up for a strong reversal.\n" +
+"3) Bearish Dragonfly Doji is considered\n     is considered more bullish.\n\n" +
+EncodeColor(colorPink)+" > CONFIRMATION :\n Next Day Confirmation needed in form of a \na)  black candle ,\nb)  large gap down or \nc)  lower close.\n \n" +
+
+EncodeColor(colorRed)+" > CURRENT CANDLE\n" +
+EncodeColor(colorAqua)+" *  The tail of the Hanging Man\n     is "+Prec(WhiteHangingManTail,1)+" times the its body.","");
+
+
+
+/*
+EncodeColor(colorOrange)+
+WriteIf(BullishHarami,"> Prior Trend    " + EncodeColor(colorWhite) + ": Bearish.\n"+
+EncodeColor(colorOrange)+"> Type                " + EncodeColor(colorWhite) + ": Reversal.\n"+
+EncodeColor(colorOrange)+"> Confirmation " + EncodeColor(colorWhite) + ": Strongly Suggested.\n"+"\n"+
+EncodeColor(colorLightBlue)+"> IMPORTANT FACTORS   " + EncodeColor(colorWhite) + "\n"+
+EncodeColor(colorYellow)+"1) The location and size of second candle\n     influences magnitude of reversal.\n" +
+"2) The higher the white candle closes up on\n     black candle more convincing a reversal.\n" +
+"3) Markets usually enter a congestion phase\n     following the Bullish Harami.\n" +
+"3) The most bullish are those that form with\n    a white/black or white/white combination.\n\n"+
+EncodeColor(colorPink)+" > CONFIRMATION :\n Third Day Confirmation needed in form of a \na)  White candle ,\nb)  large gap up or \nc)  higher close.\n \n" +
+
+EncodeColor(colorRed)+" > CURRENT CANDLE\n" +
+EncodeColor(colorAqua)+" *  The tail of the Hanging Man\n     is "+BlackHangingManTail+" times the its body.","");*/

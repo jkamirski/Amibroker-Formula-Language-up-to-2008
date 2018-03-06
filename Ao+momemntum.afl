@@ -1,0 +1,18 @@
+    /* Author: Gavrilin Ilya
+   Email address: gin24@yandex.ru
+   July 11, 2008 */
+
+Var1=MA(Avg, 34);
+Var2=MA(Avg, 5);
+AO=Var2-Var1;
+_SECTION_BEGIN("AO");
+Plot( AO, _DEFAULT_NAME(), IIf( C > O, ParamColor("Up Color", colorGreen ), ParamColor("Down Color", colorRed ) ), ParamStyle( "Style", styleHistogram | styleThick, maskHistogram  ) );
+_SECTION_END();
+
+function Momentum( array, period )
+{
+  return array - Ref( array, -period );
+}
+
+Plot( Momentum( ParamField( "Field" ), Param("Period", 10, 1, 100 ) ),
+		_DEFAULT_NAME(), ParamColor("Color", ColorCycle ) );

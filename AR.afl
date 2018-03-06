@@ -1,0 +1,28 @@
+L14 = LLV( Low, 14 );
+H14 = HHV( High, 14 );
+
+AroonDown =
+100* (14 - (( IIf(Ref(L,-1) == L14 ,1 , IIf( Ref(L ,-2 ) == L14 ,2 , IIf( Ref(L
+,- 3 ) == 
+L14 ,3 ,IIf( Ref(L ,-4 ) == L14 ,4 ,IIf(Ref( L ,-5 ) == L14 ,5 ,IIf(Ref(L ,-6 )
+== 
+L14 ,6 ,IIf( Ref(L ,-7 ) == L14 ,7 ,IIf(Ref( L ,-8 ) == L14 ,8 ,IIf(Ref( L ,-9
+) == 
+L14 ,9 ,IIf( Ref(L,-10) == LLV(L,14 ) ,10 ,IIf(Ref(L ,-11) == L14 ,11
+,IIf(Ref(L,-12 ) == 
+LLV(L ,14) ,12,IIf( Ref(L,-13) == LLV(L ,14 ) ,13 ,IIf( Ref( L,-14) == L14 ,14
+,0) ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) / 14;
+
+AroonUp =
+100 * ( 14 - ( ( IIf(Ref(H ,-1) == H14 ,1 ,IIf(Ref(H ,-2 ) == H14 ,2 ,IIf(Ref(H
+,- 3 ) == 
+H14 ,3, IIf(Ref(H ,-4 ) == H14 ,4 ,IIf(Ref(H ,-5 ) == H14 ,5 ,IIf(Ref(H ,-6 )
+== 
+H14 ,6 ,IIf(Ref(H,-7 ) == H14 ,7 ,IIf(Ref(H ,-8 ) == H14 ,8 , IIf(Ref(H ,-9 )
+== 
+H14 ,9 ,IIf(Ref(H ,-10 ) == H14 ,10 ,IIf(Ref(H ,-11 ) == H14 ,11 ,IIf(Ref(H
+,-12 ) == 
+H14 ,12 ,IIf(Ref(H ,-13) == H14 ,13 ,IIf(Ref(H ,-14 ) == H14 ,14 ,0 ) ) ) ) ) )
+) ) ) ) ) ) ) ) ) ) ) / 14;
+Plot( AroonUp, "AroonUp", colorBrightGreen, Style = 1);
+Plot( AroonDown, "AroonUp", colorRed, Style = 1);

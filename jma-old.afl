@@ -1,0 +1,2 @@
+Graph0 = Close; Graph0Style = 64;
+Graph1 = JurikJMA( Close, 7, 50);

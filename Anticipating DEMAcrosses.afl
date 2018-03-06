@@ -1,0 +1,30 @@
+// Anticipating DEMAcrosses, by D. Tsokakis, Aug2003
+k=30;
+p=20;
+fk=2/(k+1);
+fp=2/(p+1);
+d=(2-fp)*fp-(2-fk)*fk;
+EMAk=EMA(C,k);EMAp=EMA(C,p);
+DEMAk=DEMA(C,k);DEMAp=DEMA(C,p);
+Plot(DEMAk,"DEMAk",1,1);Plot(DEMAp,"DEMA p",3,1);
+DEMAcrossClose=((1-fp)*fp*EMAp-(1-fk)*fk*EMAk+(1-fk)*DEMAk-(1-fp)*DEMAp)/d;
+Plot(DEMAcrossClose,"DEMAcrossClose",4,1 );
+PlotShapes(shapeUpArrow*Cross(DEMAp,DEMAk),colorBrightGreen);
+PlotShapes(shapeDownArrow*Cross(DEMAk,DEMAp),colorRed);
+PlotShapes(shapeDownTriangle*Cross(DEMACrossClose,C),colorPink,0,Graph0,-30);
+PlotShapes(shapeUpTriangle*Cross(C,DEMAcrossClose),colorPaleGreen,0,Graph0,-30);
+Plot(C,"C",colorDarkBlue,64);
+GraphXSpace=4;
+
+//modyfied by mike_05
+Plot(styleHistogram, "DEMAcrossClose",IIf(DEMAcrossClose<=C, colorGreen,
+                             IIf(DEMAcrossClose>C,colorRed,0)),
+styleOwnScale|styleArea|styleNoLabel, -0.5, 100);
+
+
+
+
+Filter=C>0.35 AND V> Percentile(V,120,85);
+
+Sell=Cross(DEMACrossClose,C) AND Filter;
+Buy= Cross(C,DEMAcrossClose);

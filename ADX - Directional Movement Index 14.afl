@@ -1,0 +1,18 @@
+_SECTION_BEGIN("ADX");
+range = Param("Periods", 14, 2, 200, 1 );
+Plot( ADX(range), _DEFAULT_NAME(), ParamColor( "ADX color", colorBlue ), ParamStyle("ADX style", styleThick ) );
+Plot( PDI(range), "+DI", ParamColor( "+DI color", colorGreen ), ParamStyle("+DI style") );
+Plot( MDI(range), "-DI", ParamColor( "-DI color", colorRed ), ParamStyle("-DI style") );
+_SECTION_END();
+
+trend_1m=(((EMA(C,30)-EMA(C,35))/EMA(C,35))*100)+((((EMA(C,35)-EMA(C,40))/EMA(C,40))*100)*1.1)+((((EMA(C,40)-EMA(C,45))/EMA(C,45))*100)*1.2)+((((EMA(C,45)-EMA(C,50))/EMA(C,50))*100)*1.15)+((((EMA(C,50)-EMA(C,60))/EMA(C,60))*100)*1.2);
+
+Buy2=Cross(trend_1m,0);
+Sell2=Cross(0,trend_1m);
+
+
+
+shape = Buy2 * shapeUpTriangle + Sell2 * shapeDownTriangle;
+
+
+PlotShapes( shape, IIf( Buy2, colorGreen, colorRed ), 0,IIf( Buy2, Ref(ADX(range),-1)*0.9, Ref(ADX(range),-1)*1.05)  ); //NEW

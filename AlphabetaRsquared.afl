@@ -1,0 +1,59 @@
+///Alpha AND Beta Indicators
+//Ver.1.00, 2/10/02
+//coded by Anthony Faragasso
+//e-mail: ajf1111@epix.net
+
+//Insert your Stock_index,Composite_index, S&P,etc.
+//as the **Base Market**.
+
+MaxGraph=5;
+
+/***Base Market************/
+Mkt="^wig20";//Must be enclosed in "....."Quotations.
+P=Foreign(Mkt,"C",1);
+/**************************/
+
+Periods=21;//Set the period of Observation 
+
+//****Beta***********************/ 
+
+Beta=(( Periods * Sum(ROC( C,1) * ROC(P,1),Periods )) - (Sum(ROC(C,1),Periods) * Sum(ROC( P,1),Periods))) / ((Periods * Sum((ROC(P,1)^2 ),Periods)) - (Sum(ROC(P,1 ),Periods)^2 ));
+/******************************************/
+
+//*****Alpha*********************/ 
+
+Alpha=(Sum(ROC( C,1) ,Periods) - ( Beta ) * Sum( ROC( P,1) ,Periods ) )  / Periods;
+/******************************************/
+
+/***R-Squared*****************/
+R2=Correlation(P,C,Periods)^2;
+/************************************/
+Graph0=Beta;
+Graph0Style=1;
+Graph1=Alpha;
+Graph1=(LastValue(Highest(Graph0))/LastValue(Highest(Graph1))) * Graph1;
+Graph1Style=1;
+
+/**R_squared graphing*****/
+//Graph2=r2;
+//Graph2Style=1;
+//Graph2Color=2;
+/*************************/
+Title=Name()+"  "+"ALPHA "+"("+WriteVal(Alpha,format=1.2)+")"+" "+"  BETA "+"("+WriteVal(Beta,format=1.2)+")"+" "+" R_SQUARED "+"("+WriteVal(r2,format=1.2)+")";
+
+/**Notes***/
+//You've got to start with r-squared, which is an
+//indicator of the validity of the beta AND alpha
+//measures. Because the r-squared measures just how 
+//closely the Stock OR fund tracks the
+//index with which it is being compared.
+
+//An r-squared of 1.0 indicates
+//A perfect match. AND, in that case, you can
+//trust that the beta AND alpha measures are
+//valid, too. But, the lower the r-squared, the less
+//reliable beta AND alpha measures are. 
+
+//"[Betas and alphas on] a Stock or  fund with an r-squared that's below //0.50 are completely meaningless.
+
+//Assuming the r-squared is, say, 0.75 OR higher, you can move on to the //beta.

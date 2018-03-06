@@ -1,0 +1,40 @@
+
+// Balance of Power
+// Example code can be found at:
+//
+//http://www.traders.com/Documentation/FEEDbk_docs/Archive/082001/TradersTips/TradersTips.html
+
+
+//----- This prevents a bad data point from generating a divide by zero.
+THL = IIf(H != L, H - L, 0.01);
+
+//----- Reward based on Open
+BullOpen = (H - O)/THL;
+BearOpen = (O - L)/THL;
+
+//----- Reward based on Close
+BullClose = (C - L)/THL;
+BearClose = (H - C)/THL;
+
+//----- Reward based on Open - Close
+BullOC =IIf(C > O, (C - O)/THL, 0);
+BearOC =IIf(O > C, (O - C)/THL, 0);
+BullReward = (BullOpen + BullClose + BullOC)/3;
+BearReward = (BearOpen + BearClose + BearOC)/3;
+
+BOP = BullReward - BearReward;
+
+
+Period1 = Param("length of period1",34,1,100);
+SmoothBOP = EMA(BOP, Period1);
+
+Period2 = Param("length of period2",34,1,100);
+SmootherBOP = TEMA(SmoothBOP, Period2);
+
+//Plot(BOP, "BOP", colorBlack, 1);
+Plot(SmoothBOP, "BOP " + Period1, colorLightBlue, 1);
+Plot(SmootherBOP, "", colorRed);
+Plot(Ref(SmootherBOP, -2), "", colorBlue);
+Plot(0.1, "", colorGreen);
+Plot(0, "", colorBlack);
+Plot(-0.1, "", colorGreen);

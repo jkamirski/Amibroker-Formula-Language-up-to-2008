@@ -1,0 +1,7 @@
+// BOOMER
+
+BT = BBandTop(Close, 15, 2); BB=BBandBot(Close, 15, 2);
+BA = (BT+BB)/2;
+BOOMER = (BT - BB) /BA ;
+Plot(BOOMER,"Boomer" ,colorRed,styleLine);
+Plot(MA(BOOMER,20),"MA(Boomer,20)",colorBlue,styleLine);

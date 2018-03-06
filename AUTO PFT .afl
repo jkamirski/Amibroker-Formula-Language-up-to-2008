@@ -1,0 +1,75 @@
+/*AUTO PFT Levels - Projected Fibonacci Targets
+
+1.Plot this indicator where you desire and then draw study line , go to its preferences and name study line (study ID) as "SU".
+Next You have to select beginning and ending points for range from which market has made breakout -then You got PFTs" 
+
+
+see more http://ensign.editme.com/t39projected
+*/
+
+Plot( C, "Price", colorBlack, styleCandle );
+
+trendline = Study("SU", GetChartID() );
+
+StartX = LastValue( ValueWhen( ExRem( trendline, 0 ), DateTime() ) );
+EndX = LastValue( ValueWhen( trendline, DateTime() ) );
+StartY = LastValue( ValueWhen( ExRem( trendline, 0 ), trendline ) );
+EndY = LastValue( ValueWhen( trendline, trendline ) );
+
+if( StartX == 0 )
+  Title = "No trend line drawn - please draw it and use ’SU’ as study ID";
+else
+  Title = "{{NAME}} {{DATE}}n"+
+  "Start at X = " + WriteVal( StartX, formatDateTime ) + ", Y = " + StartY +
+  "nEnd at X = " + WriteVal( EndX, formatDateTime ) + ", Y = " + EndY;
+//
+
+StartBar=BeginValue(BarIndex());
+FinishBar = EndValue( BarIndex() ); 
+LastBar=BarCount-1;
+period = FinishBar - StartBar;
+Lo =LLV(L,period);
+Hi = HHV(H,period);
+
+///
+i = startbar;
+for( i = startbar; i < finishbar; i++ )
+{
+
+Line100 = EndY;
+Line0 = StartY;
+Line1 = ((Line0*0.236)-Line100)/(0.236-1);
+Line2 = ((Line0*0.382)-Line100)/(0.382-1);
+Line3 = ((Line0*0.5)-Line100)/(0.5-1);
+Line4 = ((Line0*0.618)-Line100)/(0.618-1);
+
+}
+
+// fib lines, the "x" is the extension
+fib0= LineArray(startbar, Line0, finishbar, Line0, 0, 1);fib0x= LineArray(finishbar, Line0, Lastbar, Line0, 0, 1);
+fib100 = LineArray(startbar, Line100, finishbar, Line100, 0, 1);fib100x = LineArray(finishbar, Line100, Lastbar, Line100, 0, 1);
+
+fib1= LineArray(startbar, Line1, finishbar, Line1, 0, 1);fib1x= LineArray(finishbar, Line1, Lastbar, Line1, 0, 1);
+fib2= LineArray(startbar, Line2, finishbar, Line2, 0, 1);fib2x= LineArray(finishbar, Line2, Lastbar, Line2, 0, 1);
+fib3= LineArray(startbar, Line3, finishbar, Line3, 0, 1);fib3x= LineArray(finishbar, Line3, Lastbar, Line3, 0, 1);
+fib4= LineArray(startbar, Line4, finishbar, Line4, 0, 1);fib4x= LineArray(finishbar, Line4, Lastbar, Line4, 0, 1);
+// Plot
+Plot(C,"", colorBlack,styleCandle);
+Plot(fib0,"", colorBlack,styleDots|styleNoRescale);Plot(fib0x,"", colorBlack,styleDashed|styleNoRescale);
+Plot(fib100,"", colorTan,styleDots|styleNoRescale);Plot(fib100x,"", colorTan,styleDashed|styleNoRescale);
+Plot(fib1,"", colorRed,styleNoRescale);Plot(fib1x,"", colorRed,styleDashed|styleNoRescale);
+Plot(fib2,"", colorBlue,styleNoRescale);Plot(fib2x,"", colorBlue,styleDashed|styleNoRescale);
+Plot(fib3,"", colorGreen,styleNoRescale);Plot(fib3x,"", colorGreen,styleDashed|styleNoRescale);
+Plot(fib4,"", colorBrown,styleNoRescale);Plot(fib4x,"", colorBrown,styleDashed|styleNoRescale);
+// Title
+Title="\n Automatic PFT Levels  "+Date()        +"\n"+
+EncodeColor( colorTan )  + " 100%  = "+Line100 +"  " +"\n"+
+EncodeColor( colorBlack )  + " 61.8% = "+EncodeColor( colorBrown )+Line4   +"  " +"\n"+
+EncodeColor( colorBlack )  + " 50.0% = "+EncodeColor( colorGreen )+Line3   +"  " +"\n"+
+EncodeColor( colorBlack )   + " 38.2% = "+EncodeColor( colorBlue )+Line2   +"  " +"\n"+
+EncodeColor( colorBlack )    + " 23.6% = "+EncodeColor( colorRed )+Line1   +"  " +"\n"+
+EncodeColor( colorBlack )  + "    0% = "+Line0;
+
+
+
+//Plot(Line0,"", colorRed,styleDashed|styleNoRescale);

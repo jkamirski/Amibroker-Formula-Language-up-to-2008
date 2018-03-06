@@ -1,0 +1,3 @@
+BOP=(C - O)/(H - L);
+MBOP=MA(BOP,14);
+Plot(MBOP,"BOP",colorRed,styleLine);

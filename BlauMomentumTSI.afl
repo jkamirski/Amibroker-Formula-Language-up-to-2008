@@ -1,0 +1,21 @@
+Len1 = 32;
+Len2 = 5;
+Len3 = 1;
+
+Fac1 = 2 / (Len1 + 1);
+Fac2 = 2 / (Len2 + 1);
+Fac3 = 2 / (Len3 + 1);
+
+ROCx = C - Ref(C, -1);
+ROCy = abs(ROCx);
+
+Value1 = 100 * AMA(AMA(AMA(ROCx, Fac1), Fac2), Fac3);
+Value2 = 100 * AMA(AMA(AMA(ROCy, Fac1), Fac2), Fac3);
+
+TSI = IIf(Value2 == 0, 0, Value1 / Value2);
+
+Sig = AMA(TSI, Fac2);
+
+Plot(TSI, "TSI", colorRed, styleLine);
+Plot(Sig, "Sig", colorBlue, styleLine);
+Plot(0, "Zero", colorGrey50, styleLine);

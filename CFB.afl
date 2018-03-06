@@ -1,0 +1,7 @@
+FractalType = Param("SPANSIZE",24,24,192);
+Smooth = Param("Smooth ",10,1,500);
+Level=Param( "Level*10 ", 50, 10, 100)/10;
+
+
+Plot( JurikCFB( Close,  Smooth,FractalType), _DEFAULT_NAME(), ParamColor( "Color", colorCycle ), ParamStyle("Style") );
+Plot( Level, _DEFAULT_NAME(), ParamColor( "Level Color", colorCycle ), ParamStyle("Style") );

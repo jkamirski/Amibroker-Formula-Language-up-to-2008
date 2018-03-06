@@ -1,0 +1,8 @@
+range = Param("Periods", 14, 2, 200, 1 );
+ADXa=TimeFrameExpand( ADX(range), inHourly );
+PDIa=TimeFrameExpand( PDI(range), inHourly );
+MDIa=TimeFrameExpand( MDI(range), inHourly );
+
+Plot( ADXa, _DEFAULT_NAME(), ParamColor( "ADX color", colorBlue ), ParamStyle("ADX style", styleHistogram ) );
+Plot( PDIa, "+DI", ParamColor( "+DI color", colorGreen ), ParamStyle("+DI style") );
+Plot( MDIa, "-DI", ParamColor( "-DI color", colorRed ), ParamStyle("-DI style") );

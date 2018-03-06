@@ -1,0 +1,38 @@
+  /*Developed by Tudor Marcelin - Art Invest
+Este un sistem care genereaza semnale pentru ziua urmatoare.*/
+ 
+  k=1; /* factor de multiplicare*/
+    
+/*R rezistenta pentru ziua curenta*/
+    R = Ref(Close, -1)+k*Ref(ATR(10),-1); 
+/*S rezistenta pentru ziua curenta*/ 
+    S = Ref(Close, -1)-k*Ref(ATR(10),-1);
+
+Buy=Close>R;
+Sell=Close<S;
+
+Cump=IIf(Close>R,1,0);
+Vanz=IIf(Close<S,1,0);
+
+Plot(Close,"Close",colorBlack,styleCandle);
+Plot(R, "Rez:",colorGreen,styleDots|styleNoLine);
+Plot(S, "Sup:",colorRed,styleDots|styleNoLine);
+
+
+Buy = ExRem( Buy, Sell ); //Elimina semnalele buy consecutive
+Sell = ExRem( Sell, Buy ); //Elimina semnalele sell consecutive
+
+shape = Buy * shapeUpArrow + Sell * shapeDownArrow;
+
+fig=Cump*shapeHollowUpArrow + Vanz*shapeHollowDownArrow;
+
+PlotShapes( fig, IIf( Cump, colorPaleGreen  , colorPink), 0, IIf( Cump, Low-5, High+5)); //Pentru a vizualiza semnalele consecutive eliminate de ExRem
+PlotShapes( shape, IIf( Buy, colorGreen, colorRed ), 0, IIf( Buy, Low-5, High+5)); 
+
+AlertIf( Buy, "", "ATR 10-1 Sistem", 1 );
+AlertIf( Sell, "", "ATR 10-1 Sistem",2);
+
+GraphXSpace = 3;
+
+Title=EncodeColor(colorBlue)+"Sistem ATR 10-1 "+EncodeColor(colorBlack)+ " Open:"+O+" High:"+H+" Low:"+L+" Close:"+C+EncodeColor(colorGreen)+" Rez:"+R+EncodeColor(colorRed)+" Sup:"+S+EncodeColor(colorBlue)+
+	" \nDate: "+EncodeColor(colorRed)+Date();

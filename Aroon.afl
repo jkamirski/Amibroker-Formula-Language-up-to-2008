@@ -1,0 +1,68 @@
+// Aroon Indicator
+// The Advisor october-8-2007
+
+_SECTION_BEGIN("Aroon");
+if( ParamToggle("Tooltip Shows", "Aroon|Prices" ) )
+{
+ToolTip=StrFormat("Open: %g\nHigh: %g\nLow: %g\nClose: %g (%.1f%%)\nVolume: "+NumToStr( V, 1 ), O, H, L, C, SelectedValue( ROC( C, 1 )));
+}
+Aroonswitch = ParamToggle("Aroon","On,Off");
+Periods = Param("Aroon Periods", 14, 1, 100, 1 );
+_SECTION_END();
+
+_SECTION_BEGIN("Aroon_UP");
+UPcolor = ParamColor( "Aroon_UP Color", colorGreen );
+UPstyle = ParamStyle("Aroon_UP Style",styleThick);
+_SECTION_END();
+
+_SECTION_BEGIN("Aroon_DN");
+DNcolor = ParamColor( "Aroon_DN Color", colorRed );
+DNstyle = ParamStyle("Aroon_DN Style",styleThick);
+_SECTION_END();
+
+_SECTION_BEGIN("Aroon_Oscillator");
+OSswitch = ParamToggle("Aroon_OSc","On,Off");
+OScolor = ParamColor( "Aroon_OSc Color", colorBlack );
+OSstyle = ParamStyle("Aroon_OSc Style",styleHistogram | styleOwnScale, maskHistogram );
+_SECTION_END();
+
+HHVBarsSince = HHVBars(H, Periods+1);
+LLVBarsSince = LLVBars(L, Periods+1);
+
+Aroon_Up = ((Periods - HHVBarsSince) / Periods) * 100;
+Aroon_Down = ((Periods - LLVBarsSince) / Periods) * 100;
+Aroon_Osc = Aroon_Up - Aroon_Down;
+
+Plot(IIf(Aroonswitch,Null,Aroon_Up),"Aroon_Up",UPcolor,UPstyle);
+Plot(IIf(Aroonswitch,Null,Aroon_Down),"Aroon_Down",DNcolor,DNstyle);
+Plot(IIf(OSswitch,Null,Aroon_Osc),"Aroon_Osc",OScolor,OSstyle);
+
+UPline = Param("Upper Limit",80,50,100,1);
+DNline = Param("Down Limit",20,1,50,1);
+Plot(UPline,"",ParamColor("Upper Limit Color",4),ParamStyle("Upper Limit Style",styleNoLabel+styleDashed ));
+Plot(DNline,"",ParamColor("Down Limit Color",5),ParamStyle("Down Limit Style",styleNoLabel+styleDashed ));
+Plot(50,"",6, ParamStyle("Center Line Style",styleNoLabel ));
+
+_SECTION_BEGIN("Fill Color");
+Fillswitch = ParamToggle("Fill Color1","On,Off");
+r1 = Aroon_down;
+r2 = Aroon_Up;
+FillColor = IIf( r1 > 50 OR r2 < 50, ParamColor("Up Fill Color1", colorRose),ParamColor("Down Fill Color1", colorPaleGreen));
+if (NOT Fillswitch) PlotOHLC( r1,r1,50,r1, "", FillColor, styleNoLabel | styleCloud | styleClipMinMax, DNline, UPline );
+if (NOT Fillswitch) PlotOHLC( r2,r2,50,r2, "", FillColor, styleNoLabel | styleCloud | styleClipMinMax, DNline, UPline );
+_SECTION_END();
+
+
+
+
+
+// ****************************************************************************************
+// END OF CODE (ARRON.AFL)
+// ****************************************************************************************
+/**/
+_SECTION_END();
+
+Buy=Cross(Aroon_UP,Aroon_Down);
+Sell=Cross(Aroon_Down,Aroon_UP);
+PlotShapes(IIf(Buy,shapeUpArrow,shapeNone) ,colorGreen);
+PlotShapes(IIf(Sell,shapeDownArrow,shapeNone),colorRed);

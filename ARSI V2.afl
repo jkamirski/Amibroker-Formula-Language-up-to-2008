@@ -1,0 +1,13 @@
+   // Version 2.
+    // ARSI formula
+    // variable  period version (backtest-safe)
+    Period = Param("ARSI Period", 14, 1, 100 );
+    Chg = C - Ref( C, -1 );
+    UpCount = Sum( Chg >= 0, Period );
+    DnCount = Period - UpCount;
+    UpMove = AMA( Max( Chg, 0 ), 1/UpCount );
+    DnMove = AMA( Max( -Chg, 0 ), 1/DnCount );
+    RS = UpMove/DnMove;
+    ARSI = 100-(100/(1+RS));
+    Plot( ARSI, "ARSI_V("+Period+")", colorGreen );
+    Plot( RSI( Period ), "RSI", colorRed );

@@ -1,0 +1,167 @@
+_SECTION_BEGIN("Bull-Bear");
+/* 
+A approximation of the average Bull Volume component versus the average Bear Volume component of total Volume.  Dieplays an interesting and helpful view of the ebb and flow of Bull and Bear Volume pressure in the market.  Shows what the bears are up to while the bulls are in control and vice versa.  You can see bull pressure building (or bear pressure diminishing) in advance of a bullish price move (especially in sideways markets and horizonal rectangular consolidations).  The graph moves in curves from which you can often extrapolate reasonably accurate and useful projections of future Bull or Bear Volume Action.
+
+Features:
+ Total Volume MA Histogram and Line
+ Bull Volume MA Histogram and Line
+ Bear Volume MA Histogram and Line
+ Currently Selected Bull Volume Level
+ Currently Selected Bear Volume Level
+ Bull/Bear Volume Convergence/Divergence Oscillator
+ Rising and Falling Convergence/Divergence  Background Shadows
+
+***All components of the indicator can be toggled on and off via the parameter window if the display is too busy or too sparse for your tastes. Set your own defaults in the code.***
+
+I tried to use all AB color constants for compatibility but the available greys are too dark - In this case I have supplied the RGB values for the custom greys I used in the Rise/Fall Background Shadows.  If your color scheme is radically different than the default gray background you may have to redo all the colors to your satisfaction.
+
+
+Known Issues:  
+Sometimes the volume will dip slightly below the zero line, especially at the beginning of the chart. I think this is related to the lookback periods for the TEMA's  and the uneven distribution of up and down days in the market- I don't think it voids the reliability or usefulness of the indicator.  When I figure out how to fix it I will post the updated code.  Or if anyone knows the cause and fix please let me know via email or post the fix in the comments section.
+
+If you find this indicator helpful, or if you find any error in logic or coding, or if you see a better way to display this information, please drop me an email at:
+
+"nkm at dr dot com" 
+
+...and let me know - I'd love to get the feedback.
+
+Best Regards,
+
+Nick Molchanoff
+*/
+
+
+
+
+/* basic variable defs 
+ ud: up-Day (Close up from Open)
+ dd: down-Day (Close down from Open)
+ uc: up-Close (Close up from previous Close)
+ dc: down-Close: (Close down from previous Close)
+*/
+C1 = Ref(C, -1);
+uc = C > C1; dc = C <= C1;
+ud = C > O; dd = C <= O;
+
+/*
+Volume Day types: 
+ green: up-day and up-close
+ yellow: up-day but down-close
+ red: down-day and down-close
+ blue: down-day but up-close
+ lavender: Close equals Open, Close equals previous Close
+
+(currently unused vtypes are for future enhancements)
+*/
+green = 1; blue = 2; yellow = 3; red = 4; lavender = 5;
+VType = IIf(ud, 			
+			IIf(uc, green, yellow),
+		 IIf(dd, 
+			IIf(dc, red, blue), lavender));
+
+/* green volume: up-day and up-close*/
+gv = IIf(VType == green, V, 0); 
+/* yellow volume: up-day but down-close */
+yv = IIf(VType == yellow, V, 0); 
+/* red volume: down-day and down-close */
+rv = IIf(VType == red, V, 0); 
+/* blue volume: down-day but up-close */
+bv = IIf(VType == blue, V, 0); 
+
+/* split up volume of up-close days from down-close days - (for the purposes of this volume display indicator, up-days that closed down from the previous close are considered bearish volume days, and conversely, down-days that nevertheless closed up from the previous close are considered bullish volume days - my testing indicates this is more accurate than using ordinary up-days and down-days) */
+uv = gv + bv; uv1 = Ref(uv, -1); /* up volume */
+dv = rv + yv; dv1 = Ref(dv, -1); /* down volume */
+
+/* create moving average period parameters */
+VolPer = Param("Adjust Vol. MA per.", 34, 1, 255, 1);
+ConvPer = Param("Adjust Conv. MA per.", 9, 1, 255, 1);
+
+/* create triple exponential moving avearges of separate up and down volume moving averages */
+MAuv = TEMA(uv, VolPer ); mauv1 = Ref(mauv, -1);
+MAdv = TEMA(dv, VolPer ); madv1 = Ref(madv, -1);
+MAtv = TEMA(V, VolPer );//total volume
+
+/* Switch for Horizontal lines indicating current level of positive and negative volume for ease in comparing to past highs/lows - toggle via parmameter window */
+OscillatorOnly = Param("Show Oscillator Only", 0, 0, 1, 1);
+CompareBullVolume = Param("Show Bull Level", 0, 0, 1, 1);
+if(CompareBullvolume AND !OscillatorOnly){
+Plot(SelectedValue(MAuv), "", colorGreen, styleLine);
+}
+
+CompareBearVolume = Param("Show Bear Level", 0, 0, 1, 1);
+if(CompareBearVolume AND !OscillatorOnly){
+Plot(SelectedValue(MAdv), "", colorRed, styleLine);
+}
+
+/* Volume Segment Switches - toggle via parameter window */
+bullvolume = Param("Show Bull Volume", 1, 0, 1, 1);
+bearvolume = Param("Show Bear Volume", 1, 0, 1, 1);
+totalvolume = Param("Show Total Volume", 1, 0, 1, 1);
+
+/* plot volume lines and histograms if toggled on: */
+bearToFront = Param("Show Bear Vol in Front", 0, 0, 1, 1);
+if(bearToFront AND !OscillatorOnly){
+Plot(MAdv, "", colorRed, styleHistogram|styleNoLabel);
+}
+if(bullvolume AND !OscillatorOnly){
+Plot(MAuv, "Average Bull Volume", colorGreen, styleHistogram|styleNoLabel);
+}
+if(bearvolume AND !OscillatorOnly){
+Plot(MAdv, "Average Bear Volume", colorRed, styleHistogram|styleNoLabel);
+}
+if(totalVolume AND !OscillatorOnly){
+Plot(MAtv, "Total Volume", colorLavender, styleHistogram|styleNoLabel);
+Plot(MAtv, "", colorLavender, styleLine);
+}
+if(bullvolume AND !OscillatorOnly){
+Plot(MAuv, "", colorGreen, styleLine);
+}
+if(bearvolume AND !OscillatorOnly){
+Plot(MAdv, "", colorRed, styleLine);
+}
+
+/* better visibility of zero line: */
+Plot(0, "", colorBlue, 1);
+
+/* Rise/Fall Convergence variables:  */
+Converge = (TEMA(MAuv - MAdv, ConvPer));
+Converge1 = Ref(Converge, -1);
+ConvergeUp = Converge > Converge1;
+ConvergeOver = Converge > 0;
+rising = ConvergeUp AND ConvergeOver;
+falling = !ConvergeUp AND ConvergeOver;
+
+/* Rise/Fall Convergence Oscillator Switch  - toggle via parameter window - (provides a better view of resulting combination of battling bull/bear volume forces) */
+convergenceOscillator = Param("Show Oscillator", 0, 0, 1, 1);
+if(convergenceOscillator OR OscillatorOnly){
+Plot(Converge, "Bull/Bear Volume Convergence/Divergence", colorViolet, 1|styleLeftAxisScale|styleNoLabel|styleThick);
+Plot(0,"", colorBlack, 1|styleLeftAxisScale|styleNoLabel);
+}
+
+/********************************************************
+ Convergence Rise/Fall Shadows: 
+
+ (provides a more easily visible display of rising and falling  bull/bear volume convergence) - toggle via parameter window 
+
+-posiitive Volume exceeding negative Volume: Light shadow
+-negative volume exceeding positive volume: dark shadow
+-if you use standard gray background - best shadows are:
+-my greys: 14 = (216, 216, 216); 15 = (168, 168, 168));
+-best substitute? using AB color constants?
+-light: colorpalegreen; dark: colorRose;? 
+-(depends on your color scheme - customize to your tastes)
+**********************************************************/
+
+/* uncomment if you use my custom color greys: */
+riseFallColor = IIf(rising, 14,15); //my custom shadow greys
+
+/* comment out if you use my custom color gray shadows: */
+/* riseFallColor = IIf(rising, colorPaleGreen,colorRose); */
+
+/* Rise/Fall Convergence Plot Switch - toggle via parameter window */
+riseFallShadows = Param("Show RiseFallShadows", 0, 0, 1, 1);
+if(riseFallShadows){
+Plot(IIf(rising OR falling, 1, 0), "", riseFallColor, styleHistogram|styleArea|styleOwnScale|styleNoLabel);
+}
+GraphXSpace = 0.5;
+_SECTION_END();

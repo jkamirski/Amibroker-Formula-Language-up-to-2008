@@ -1,0 +1,25 @@
+_SECTION_BEGIN("Buffys Bline");
+Bline = StochD(35,10,1);
+BlineShape = IIf(Bline >= 80 OR Bline<=20, shapeCircle, shapeNone);
+BlineColor = IIf(Bline>=80, colorGreen, IIf(Bline<=20, colorRed, colorWhite));
+Ribbon1a = StochK(5,3);
+Ribbon1b = StochD(5,3,3);
+Ribbon2a = StochK(20,10);
+Ribbon2b = StochD(20,10,10);
+Ribbon1Color =IIf(Ribbon1a>Ribbon1b,colorAqua, colorRed);
+Ribbon2Color =IIf(Ribbon2a>Ribbon2b,colorYellow, colorBlue);
+
+Plot(Bline, "Bline", colorOrange, styleThick);
+PlotShapes(BlineShape, BlineColor, 0, bline, 0);
+
+Plot(Ribbon1a, "Ribbon1a", colorBlack, styleLine|styleThick);
+Plot(Ribbon1b, "Ribbon1b", colorBlack, styleLine|styleThick);
+Plot(Ribbon2a, "Ribbon2a", colorBlack, styleLine|styleThick);
+Plot(Ribbon2b, "Ribbon2b", colorBlack, styleLine|styleThick);
+
+PlotOHLC( Ribbon1a , Ribbon1a , Ribbon1b ,Ribbon1a , "Ribbon1", Ribbon1Color , styleCloud );
+PlotOHLC( Ribbon2a , Ribbon2a , Ribbon2b ,Ribbon2b , "Ribbon2", Ribbon2Color , styleCloud );
+
+Plot( 20 , "", colorDarkGrey,styleDashed);
+Plot( 80 , "", colorDarkGrey,styleDashed);
+_SECTION_END();

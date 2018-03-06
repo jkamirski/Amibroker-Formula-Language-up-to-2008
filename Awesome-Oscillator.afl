@@ -1,0 +1,21 @@
+/* Awesome Oscillator code for Amibroker
+	Written By Gary Thompson 
+	07th April 2005  */
+
+
+SlowMA=MA( Avg ,34);
+FastMA=MA( Avg,5);
+
+barcolor= IIf((SlowMA - FastMA) <= Ref(SlowMA - FastMA,
+-1),colorGreen,colorRed); 
+               
+Graph0=FastMA-SlowMA;
+Graph0Style=2+5;
+Graph0BarColor=barcolor;
+
+/* the following is to put the 5 period signal line on the oscillator if you
+choose*/
+
+/*Graph1=Wilders(SlowMA-FastMA,5);
+Graph1Style=4+1;*/
+

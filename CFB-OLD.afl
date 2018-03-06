@@ -1,0 +1,1 @@
+Graph0 = JurikCFB( Close, 8, 48 );

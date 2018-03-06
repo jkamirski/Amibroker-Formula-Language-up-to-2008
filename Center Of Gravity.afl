@@ -1,0 +1,33 @@
+SetBarsRequired(200, 0);
+
+// Ehlers formulas
+// from Ehlers, John F. Cybernetic Analysis for Stocks and Futures. Wiley. 2004. 
+// Chapter 5, p. 47. Code on p. 49.
+
+function CGOscillator(array, length)
+// Figure 5.1 on p. 49.
+{
+  CGOValue = array;
+
+  for(i = length; i < BarCount; i++)
+  {
+    num = 0;
+    denom = 0;
+    for(j = 0; j < length; j++)
+    {
+      num = num + (1 + j) * array[i - j];
+      denom = denom + array[i - j];
+    }
+    if (denom != 0) CGOValue[i] = -num / denom + (length +1)/2;
+  }
+  return CGOValue;
+}
+
+med = (H + L) / 2;
+Period = Param("Period", 10, 1, 250, 1);
+
+Plot(CGOscillator(med, Period), "CG Oscillator", colorRed, styleLine);
+Plot(Ref(CGOscillator(med, Period), -1), "Trigger", colorBlue, styleLine);
+PlotGrid(.8);
+PlotGrid(.5);
+PlotGrid(.2);

@@ -1,0 +1,246 @@
+/////////////////////////////////////////////////////////////////////////////
+//
+//  TRO Indicators for AmiBroker
+//
+//	This code contains the TRO indicators for dynamic support and resistance,
+//  Fibs based on the dynamic SRs, buy (and sell) zones, and the TRO slot
+//  machine which displays the candle colors for the day and two user defined
+//  timeframes (default is 5-min and 60-min).  You can use the parameter screen
+//  to turn the indicators on and off.  
+//
+//  The dynamic support and resistance is displayed as dots above and below the 
+//  price bars.  Red is resistance and Blue is support.  White dots indicate a 
+//  possible bounce trade off the dynamic SRs.  The fibs are displayed as dotted 
+//  lines.  
+//  
+//  The Buy (AND Sell) zones are displayed as colored ranges around the day's open 
+//  value (which is displayed as a white line).  
+//
+//  The TRO slot machine is a 4 tiered ribbon at the bottom of the price
+//  chart.  The bottom ribbon represents the day candle color (green is up and
+//  red is down).  The second and third ribbons are user defined timeframes
+//  which also display the timeframe candle colors.  The top ribbon shows sportatic
+//  blocks which represent trade triggers relating to the white dots above and
+//  below the price bars.  A blue block is buy and a red block is sell.  A trigger
+//  is only displayed if one of the user specified timeframes is pointing in the
+//  direction of the trigger.
+//
+//  Compiled and written by:  dbw451
+//	 Date: July 27, 2007
+//
+//  Modifications:
+//
+//  dbw451
+//  July 28, 2007
+//  Made the Dynamic SR timeframe to be user specified rather than dependant on
+//  the chart timeframe.  This allows a Dyanmic SR timeframe of say 5 minutes to be
+//  plotted on a 1 minute chart.  In this case, 5 one minute bars would correspond to
+//  one bar on the Dynamic SR timeframe (which is displayed on the 1 minute chart as
+//  5 dots).  I added a line plot of the high and low of the Dynamic SR timeframes which
+//  makes it easier to see how the 1 minute bars move inside the 5 minute bars.
+//
+//  dbw451
+//  July 29, 2007
+//  Corrected the display of Dynamic SRs
+//
+//  dbw451
+//  July 30, 2007
+//  Added the dreaded SetBarsRequired to minimize the affects of QuickAFL changing the
+//  dynamic SR dots.  I also parameterized many of the colors making it easier to setup
+//  colors for printing.
+//
+//  Note: this code is provided as is and no representations of any kind are 
+//  implied or made.  As always, trading is at your own risk.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+// Global Variables
+bDynamic_R = 0;
+bDynamic_S = 0;
+iSRtimeframe = 0;
+bNewDay = 0;
+
+
+_SECTION_BEGIN("Toggles");
+
+bPlotSR = ParamToggle("Dynamic SR","Off|On",True);
+bPlotSRtf  = ParamToggle("Dynamic SR TF lines","Off|On",False);
+bPlotFib = ParamToggle("Dynamic Fibs","Off|On",False);
+bPlotBZ = ParamToggle("Buy Zone","Off|On",True);
+bPlotSM = ParamToggle("Slot Machine","Off|On",True);
+
+_SECTION_END();
+
+_SECTION_BEGIN("Colors");
+
+clrBackground = ParamColor("Chart Background", colorBlack);
+clrResistance = ParamColor("Resistance",colorRed);
+clrSupport = ParamColor("Support",colorBlue);
+clrSRsignal = ParamColor("SR signal",colorWhite);
+clrSRtf = ParamColor("SR TF lines",colorLightYellow);
+clrFib = ParamColor("Fibs",colorBrown);
+clrOpen = ParamColor("Open",colorLightGrey);
+clrLongZone = ParamColor("Long zone",colorPaleGreen);
+clrShortZone = ParamColor("Short zone",colorLightOrange);
+
+_SECTION_END();
+
+
+// Price Chart
+SetBarsRequired(10000, 10000); // require all past and all future bars 
+SetChartOptions(0,chartShowArrows|chartShowDates);
+SetChartBkColor(clrBackground);
+_N(Title = StrFormat("{{NAME}} - {{INTERVAL}} {{DATE}} O %g, H %g, L %g, C %g (%.1f%%) Vol " +WriteVal( V, 1.0 ) +" {{VALUES}}", O, H, L, C, SelectedValue( ROC( C, 1 )) ));
+Plot(C, "C", colorWhite,  styleCandle ); 
+
+
+_SECTION_BEGIN("DynamicSR");
+
+iPeriods = Param("Num Lookback Bars",5 ,1, 100,1);
+tfSR = Param("SR TimeFrame (min)",5,1,240,1); 
+
+DayValue = Day(); 
+bNewDay = IIf(DayValue != Ref(DayValue,-1),1,0);
+
+BarsSinceOpen = BarsSince(bNewDay); 
+PeriodToUse = IIf (BarsSinceOpen < iPeriods, BarsSinceOpen + 1, iPeriods); 
+
+// Calculate Dynamic SR in the user specified timeframe
+iSRtimeframe = tfSR * 60;
+TimeFrameSet(iSRtimeframe);
+
+Dynamic_R = HHV(H,PeriodToUse); 
+Dynamic_S = LLV(L,PeriodToUse); 
+Dynamic_R = IIf(H >= Dynamic_R, H, Dynamic_R); 
+Dynamic_S = IIf(L <= Dynamic_S ,L, Dynamic_S); 
+
+tfLow = L;
+tfHigh = H;
+
+tfPlotL = L;
+tfPlotH = H;
+
+bCloseTop = (C == H);
+bCloseBot = (C == L);
+
+TimeFrameRestore();
+
+Dynamic_R = TimeFrameExpand(Dynamic_R, iSRtimeframe, expandLast);
+Dynamic_S = TimeFrameExpand(Dynamic_S, iSRtimeframe, expandLast);
+Dynamic_R = Ref(Dynamic_R,-1);
+Dynamic_S = Ref(Dynamic_S,-1);
+
+DynamicRange = Dynamic_R - Dynamic_S;
+
+tfLow = TimeFrameExpand(tfLow, iSRtimeframe, expandLast);
+tfHigh = TimeFrameExpand(tfHigh, iSRtimeframe, expandLast);
+
+bCloseBot = TimeFrameExpand(bCloseBot, iSRtimeframe, expandLast);
+bCloseTop = TimeFrameExpand(bCloseTop, iSRtimeframe, expandLast);
+bCloseTop = Ref(bCloseTop,-1);
+bCloseBot = Ref(bCloseBot,-1);
+
+bDynamic_R = Ref(tfHigh,-1) == Dynamic_R AND !bCloseTop;
+bDynamic_S = Ref(tfLow,-1) == Dynamic_S AND !bCloseBot;
+
+if(bPlotSR) {
+	Plot(Dynamic_R,"DR", IIf(bDynamic_R, clrSRsignal, clrResistance), styleDots | styleNoLine); 
+	Plot(Dynamic_S,"DS", IIf(bDynamic_S, clrSRsignal, clrSupport), styleDots | styleNoLine); 
+}
+
+
+if(bPlotSRtf) {
+	tfPlotL = TimeFrameExpand(tfPlotL, iSRtimeframe, expandFirst);
+	tfPlotH = TimeFrameExpand(tfPlotH, iSRtimeframe, expandFirst);
+	Plot (tfPlotL,"tfLow",clrSRtf, styleStaircase | styleNoRescale);
+	Plot (tfPlotH,"tfHigh",clrSRtf, styleStaircase | styleNoRescale);
+}
+
+if(bPlotFib) {
+	fib1 = Dynamic_S + .24 * DynamicRange; 
+	fib2 = Dynamic_S + .38 * DynamicRange; 
+	fib3 = Dynamic_S + .50 * DynamicRange; 
+	fib4 = Dynamic_S + .62 * DynamicRange; 
+	fib5 = Dynamic_S + .76 * DynamicRange; 
+
+	Plot(fib1,"F24", clrFib, styleDashed); 
+	Plot(fib2,"F38", clrFib, styleDashed); 
+	Plot(fib3,"F50", clrOpen, styleDashed); 
+	Plot(fib4,"F62", clrFib, styleDashed); 
+	Plot(fib5,"F76", clrFib, styleDashed);  
+}
+  
+_SECTION_END();
+
+ 
+_SECTION_BEGIN("BuyZone");
+
+// Programmer: Alex Chambers, May 2007
+// For use with the BuyZone trading strategy at Kreslik.com
+// For Amibroker - just drag and drop
+
+// I, Alex Chambers, am not responsible for any results you may have from the use of this indicator
+// You must evaluate yourself the potential for gains AND losses
+
+// Please include this and/or any other comment description of any changes you make.
+// 
+// July 26, 2007
+// dbw451: Updated to show graphical zones instead of lines
+
+OpenTime = Param("TimeOfOpen",93000,0,160000,500);
+Points = Param("BuyZonePointsAway",5,0,50,1);
+Range = Param("BuyZoneRange",3,0,50,1);
+multiplier = Param("Multiplier",1,0,10000,100);
+
+bOpenBar = IIf(TimeNum() >= OpenTime AND TimeNum() < OpenTime+iSRtimeframe,1,0);  
+bOpenBar = ExRem(bOpenBar,bNewDay);
+dOpenBar = IIf(bOpenBar==1,Open,0);
+bzOpen = ValueWhen(bOpenBar==1,dOpenBar);
+
+bzPoints = Points / multiplier;
+bzRange = Range / multiplier;
+
+bzLongBot = bzOpen + bzPoints;
+bzLongTop = bzLongBot + bzRange;
+bzShortTop = bzOpen - bzPoints;
+bzShortBot = bzShortTop - bzRange;
+
+if (bPlotBZ)
+
+{
+	Plot (bzOpen,"bzOpen",clrOpen, styleStaircase | styleNoRescale);
+	PlotOHLC( bzLongBot,bzLongTop,bzLongBot,bzLongTop, "", clrLongZone, styleCloud | styleNoLabel | styleNoRescale);
+	PlotOHLC( bzShortTop,bzShortBot,bzShortTop,bzShortBot, "", clrShortZone, styleCloud | styleNoLabel | styleNoRescale);
+	Plot(bzLongTop,"LZtop", clrLongZone, styleLine | styleNoRescale);		// Plot line so value is displayed on chart axis
+	Plot(bzShortBot,"SZbot", clrShortZone, styleLine | styleNoRescale);
+}
+_SECTION_END();
+
+
+_SECTION_BEGIN("SlotMachine");
+
+if(bPlotSM) {
+	Row3Minutes = Param("Row3 TimeFrame (min)",60,1,240,1);
+	Row3Time = Row3Minutes * 60;
+	Row2Time = iSRtimeframe;
+
+	TimeFrameSet(Row2Time);
+	btfRow2 = Ref(C,-1) > Ref(O,-1);
+	TimeFrameRestore();
+
+	TimeFrameSet(Row3Time);
+	btfRow3 = C > O;
+	TimeFrameRestore();
+
+	bRow2 = TimeFrameExpand(btfRow2, Row2Time);
+	bRow3 = TimeFrameExpand(btfRow3, Row3Time);
+
+	bTrendTrigger = IIf((bDynamic_R AND (!bRow2 OR !bRow3)), 1, IIf((bDynamic_S AND (bRow2 OR bRow3)), 1, 0));
+
+	Plot( 1, "Day", IIf( C > bzOpen, colorGreen, colorDarkRed), styleOwnScale|styleArea|styleNoLabel, -0.5, 100 );
+	Plot( 2, "60min", IIf( bRow3, colorBrightGreen, colorRed), styleOwnScale|styleArea|styleNoLabel, -0.5, 100 );
+	Plot( 3, "5min", IIf( bRow2, colorLime, colorGold), styleOwnScale|styleArea|styleNoLabel, -0.5, 100 );
+	Plot( 4, "Trigger", IIf((bTrendTrigger AND bDynamic_S), clrSupport, IIf((bTrendTrigger AND bDynamic_R), clrResistance, clrBackground)), styleOwnScale|styleArea|styleNoLabel, -0.5, 100 );
+}
+
+_SECTION_END();

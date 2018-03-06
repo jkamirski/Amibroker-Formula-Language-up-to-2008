@@ -1,0 +1,13 @@
+ATRxMultiplier = Prec(EMA(ATR(1), 9) * 2.5, 1);  // 9 per. EMA of ATR, times multiplier, 2 decimal places
+VS_lower = HHV(Close, 9) - ATRxMultiplier; // for longs, VS line is below price
+//VS_lower = HHV( C, BarsSince( start_of_upwave )) - ATRxMultiplier;
+VS_upper = LLV(Close, 9) + ATRxMultiplier;  // for shorts, VS line is above price
+//VS_upper = LLV( C, BarsSince( start_of_downwave )) + ATRxMultiplier;
+downwave = ExRem(C <= VS_lower, C >= VS_upper); // =1 on ARRAY1 true, then 0 until ARRAY2 true.
+upwave = ExRem(C >= VS_upper, C <= VS_lower);
+start_of_upwave = Flip(downwave, upwave);  // =1@ARRAY1 true, 0@ARRAY2 true, then 1@ARRAY1 true...
+start_of_downwave = Flip(upwave, downwave);
+Plot(VS_lower, "VS_lower", start_of_downwave * colorOrange,styleThick);
+Plot(VS_upper, "VS_upper", start_of_upwave * colorBlue,styleThick);
+Plot(C, "price_dv", colorWhite, styleBar);
+// END

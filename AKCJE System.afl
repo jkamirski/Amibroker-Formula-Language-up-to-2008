@@ -1,0 +1,212 @@
+_SECTION_BEGIN("Inverse Fischer Transform2");
+/*This is the Inverse Fisher Transform (IFT) of the Relative Strength Index (RSI), across multiple timeframes. It only shows two timeframes at any given time -- the currrent chart time frame, and the next largest time frame (see code for details).
+
+Hourly chart: When the IFT is oversold on the daily IFT, and lifting up above the oversold line -- and the hourly IFT is also rising -- this is a good buy signal. The reverse is true for a short signal.
+
+This may be used with 5 min., hourly, daily, and weekly charts.
+
+Included is Tom DeMark-style duration analysis, which includes trend strength arrows. These arrows are not buy or sell signals. Instead, they represent extreme conditions, which usually end up with a strong rebound, or a strong continuation of the trend. Use something like the Volume Flow Indicator (VFI) to help determine which way the trend will go.
+
+The white IFT line always represents the smaller time frame (i.e, the default time frame for the chart).
+
+You may want to build a version of this that uses Tom DeMark's Range Expansion Index, instead of the IFT or RSI. This works well to help determine what this IFT indicator will likely do next.
+*/
+
+
+/* IFT-RSI */
+TimeFrameSet(in1Minute);
+pr_5m = (H+L)/2; 
+len_5m = 10; 
+maxh_5m = HHV(pr_5m,len_5m); 
+minl_5m = LLV(pr_5m,len_5m); 
+Array1_5m = .33*2*((pr_5m-minl_5m)/(maxh_5m-minl_5m)-.5); 
+val1_5m = AMA(Array1_5m,.67); 
+value1_5m = IIf(val1_5m>.99,.999,IIf(val1_5m<-.99,-.999,val1_5m)); 
+Array2_5m = .5*log((1+value1_5m)/(1-value1_5m)); 
+fish_5m = AMA(Array2_5m,.5); 
+
+/* IFT-RSI */
+TimeFrameSet(in5Minute);
+pr_h = (H+L)/2; 
+len_h = 10; 
+maxh_h = HHV(pr_h,len_h); 
+minl_h = LLV(pr_h,len_h); 
+Array1_h = .33*2*((pr_h-minl_h)/(maxh_h-minl_h)-.5); 
+val1_h = AMA(Array1_h,.67); 
+value1_h = IIf(val1_h>.99,.999,IIf(val1_h<-.99,-.999,val1_h)); 
+Array2_h = .5*log((1+value1_h)/(1-value1_h)); 
+fish_h = AMA(Array2_h,.5); 
+
+/* IFT-RSI */
+TimeFrameSet(in15Minute);
+pr_d = (H+L)/2; 
+len_d = 10; 
+maxh_d = HHV(pr_d,len_d); 
+minl_d = LLV(pr_d,len_d); 
+Array1_d = .33*2*((pr_d-minl_d)/(maxh_d-minl_d)-.5); 
+val1_d = AMA(Array1_d,.67); 
+value1_d = IIf(val1_d>.99,.999,IIf(val1_d<-.99,-.999,val1_d)); 
+Array2_d = .5*log((1+value1_d)/(1-value1_d)); 
+fish_d = AMA(Array2_d,.5); 
+
+/* IFT-RSI */
+TimeFrameSet(inHourly);
+pr_w = (H+L)/2; 
+len_w = 10; 
+maxh_w = HHV(pr_w,len_w); 
+minl_w = LLV(pr_w,len_w); 
+Array1_w = .33*2*((pr_w-minl_w)/(maxh_w-minl_w)-.5); 
+val1_w = AMA(Array1_w,.67); 
+value1_w = IIf(val1_w>.99,.999,IIf(val1_w<-.99,-.999,val1_w)); 
+Array2_w = .5*log((1+value1_w)/(1-value1_w)); 
+fish_w = AMA(Array2_w,.5);
+
+/* IFT-RSI */
+TimeFrameSet(inDaily);
+pr_mo = (H+L)/2; 
+len_mo = 10; 
+maxh_mo = HHV(pr_mo,len_mo); 
+minl_mo = LLV(pr_mo,len_mo); 
+Array1_mo = .33*2*((pr_mo-minl_mo)/(maxh_mo-minl_mo)-.5); 
+val1_mo = AMA(Array1_mo,.67); 
+value1_mo = IIf(val1_mo>.99,.999,IIf(val1_mo<-.99,-.999,val1_mo)); 
+Array2_mo = .5*log((1+value1_mo)/(1-value1_mo)); 
+fish_mo = AMA(Array2_mo,.5); 
+
+/* IFT-RSI */
+TimeFrameSet(inWeekly);
+pr_mon = (H+L)/2; 
+len_mon = 10; 
+maxh_mon = HHV(pr_mon,len_mon); 
+minl_mon = LLV(pr_mon,len_mon); 
+Array1_mon = .33*2*((pr_mon-minl_mon)/(maxh_mon-minl_mon)-.5); 
+val1_mon = AMA(Array1_mon,.67); 
+value1_mon = IIf(val1_mon>.99,.999,IIf(val1_mon<-.99,-.999,val1_mon)); 
+Array2_mon = .5*log((1+value1_mon)/(1-value1_mon)); 
+fish_mon = AMA(Array2_mon,.5); 
+
+TimeFrameRestore();
+
+varOverboughtSignal = 0.20;
+varOversoldSignal = -0.20;
+PlotGrid(varOverboughtSignal);
+PlotGrid(varOversoldSignal);
+
+//Plot(varOverboughtSignal,"",colorLightGrey,styleLine);
+//Plot(varOversoldSignal,"",colorLightGrey,styleLine);
+
+/// DURATION ANALYSIS for Hourly ///
+// Identify oversold conditions, marked with red arrow to denote downtrend
+varOversold_h = IIf( Ref(fish_h,-7)<=varOversoldSignal 
+AND Ref(fish_h,-6)<=varOversoldSignal 
+AND Ref(fish_h,-5)<=varOversoldSignal 
+AND Ref(fish_h,-4)<=varOversoldSignal 
+AND Ref(fish_h,-3)<=varOversoldSignal 
+AND Ref(fish_h,-2)<=varOversoldSignal 
+AND Ref(fish_h,-1)<=varOversoldSignal 
+AND fish_h<=varOversoldSignal ,1,0);
+IIf(VarOversold_h>0,PlotShapes(shapeHollowDownArrow*varOversold_h,colorRed),0);
+
+// Identify overbought conditions, marked with green arrow to denote uptrend
+varOverbought_h = IIf( Ref(fish_h,-7)>=varOverboughtSignal 
+AND Ref(fish_h,-6)>=varOverboughtSignal 
+AND Ref(fish_h,-5)>=varOverboughtSignal
+AND Ref(fish_h,-4)>=varOverboughtSignal 
+AND Ref(fish_h,-3)>=varOverboughtSignal 
+AND Ref(fish_h,-2)>=varOverboughtSignal 
+AND Ref(fish_h,-1)>=varOverboughtSignal 
+AND fish_h>=varOverboughtSignal ,1,0);
+IIf(varOverbought_h>0,PlotShapes(shapeHollowUpArrow*varOverbought_h,colorGreen),0);
+
+Plot(TimeFrameExpand(fish_5m, in1Minute), "IFT_1m", colorBrightGreen, styleThick);
+
+Plot(TimeFrameExpand(fish_h, in5Minute), "IFT_5m", colorPink, styleThick);
+
+Plot(TimeFrameExpand(fish_d, in15Minute), "IFT_15m", colorRed, styleThick);
+
+Plot(TimeFrameExpand(fish_w, inHourly), "IFT_H", colorBlue, styleThick);
+
+Plot(TimeFrameExpand(fish_mo, inDaily), "IFT_D", colorBlack, styleThick);
+
+Plot(TimeFrameExpand(fish_mon, inWeekly), "IFT_W", colorViolet, styleThick);
+
+/// R squared
+R2PDS=Param("R2pds",20,0,120,1); /*for automatic adjustments to the r2 critical value line use one of
+the periods listed above*/
+
+R2=Correlation(Cum( 1 ),C,r2pds)*Correlation(Cum( 1 ),C,r2pds);
+slope=LinRegSlope(C,r2pds);
+
+Crit=IIf(R2PDS==5,.77,IIf(R2PDS==10,.40,IIf(R2PDS==14,.27,IIf(R2PDS==20,.20,IIf(R2PDS==25,.16,IIf(R2PDS==30,.13,IIf(R2PDS==50,.08,IIf(R2PDS==60,.06,IIf(R2PDS==120,.03,0)))))))));
+
+///Revrsi
+
+WildPer = Param("Wilder Time Periods", 14, 1, 100, 1 );
+//WildPer = Optimize("WildPer", 14, 1, 30, 1);
+Value = Param("RSI value", 50, 1, 100, 0.1 );
+//Value = Optimize("Value", 50, 1, 55, 1 );
+Field =  Param("Price Field (0-close, 1-high, 2-low)", 0, 0, 2, 1 );
+Mode = Param("Mode (0-RSI, 1-ReverseRSI)", 1, 0, 1, 1 );
+function RevRSI( value, array, periods )
+{
+   AU = Wilders( Max( array - Ref( array, -1 ), 0 ), periods );
+   AD = Wilders( Max( Ref( array, -1 ) - array, 0 ), periods );
+   x = ( periods - 1 ) * ( AD * value / (100 - value) - AU);
+   return IIf( x >= 0, array+x, array + x * (100 - value)/value );
+}
+array = IIf( Field == 0, Close, IIf( Field == 1, High, Low ) );
+aname = WriteIf( Field == 0, "Close", WriteIf( Field == 1, "High", "Low" ) );
+RSIrev=Cross(array ,RevRSI( value, array, WildPer )); 
+
+SellRSIrev=Cross(RevRSI( value, array, WildPer), array); 
+
+
+
+TimeFrameSet(inWeekly);
+R2PDSw=Param("R2pdsw",20,0,120,1); /*for automatic adjustments to the r2 critical value line use one of
+the periods listed above*/
+
+R2w=Correlation(Cum( 1 ),C,r2pdsw)*Correlation(Cum( 1 ),C,r2pdsw);
+slopew=LinRegSlope(C,r2pdsw);
+
+Critw=IIf(R2PDSw==5,.77,IIf(R2PDSw==10,.40,IIf(R2PDSw==14,.27,IIf(R2PDSw==20,.20,IIf(R2PDSw==25,.16,IIf(R2PDSw==30,.13,IIf(R2PDSw==50,.08,IIf(R2PDSw==60,.06,IIf(R2PDSw==120,.03,0)))))))));
+
+///Revrsi
+
+WildPerw = Param("Wilder Time Periodsw", 14, 1, 100, 1 );
+//WildPer = Optimize("WildPer", 14, 1, 30, 1);
+Valuew = Param("RSI valuew", 50, 1, 100, 0.1 );
+//Value = Optimize("Value", 50, 1, 55, 1 );
+Fieldw =  Param("Price Field (0-close, 1-high, 2-low)", 0, 0, 2, 1 );
+Modew = Param("Modew (0-RSIw, 1-ReverseRSIw)", 1, 0, 1, 1 );
+function RevRSIw( valuew, arrayw, periodsw )
+{
+   AUw = Wilders( Max( arrayw - Ref( arrayw, -1 ), 0 ), periodsw );
+   ADw = Wilders( Max( Ref( arrayw, -1 ) - arrayw, 0 ), periodsw );
+   xw = ( periodsw - 1 ) * ( ADw * valuew / (100 - valuew) - AUw);
+   return IIf( xw >= 0, arrayw+xw, arrayw + xw * (100 - valuew)/valuew );
+}
+arrayw = IIf( Fieldw == 0, Close, IIf( Fieldw == 1, High, Low ) );
+anamew = WriteIf( Fieldw == 0, "Close", WriteIf( Fieldw == 1, "High", "Low" ) );
+RSIw=Cross(arrayw ,RevRSIw( valuew, arrayw, WildPerw ));
+
+SellRSIw=Cross(RevRSIw( valuew, arrayw, WildPerw), arrayw); 
+ 
+TimeFrameRestore();
+
+Buy= (fish_mo <= -0.2 AND fish_mon <= -0.2 AND (r2 >= .6 AND( slope < 0)) ); //  );  //AND (V*C >=100000)
+Filter= ( (   (fish_mo <= -0.2 AND fish_mon <= -0.2) 
+ AND ( ((r2 >= .6 AND( slope < 0) )
+  OR (r2 <= .3 AND slope > 0)) OR RSIrev) )
+ AND ((r2w >= .6 AND( slopew < 0))  OR (r2w <= .3 AND slopew > 0) OR RSIw )  ); // OR RSIrev
+
+//sellfilter
+Sell = ( (   (fish_mo > 0.2 AND fish_mon > 0.2) 
+ AND ( ((r2 >= .6 AND( slope > 0) )
+  OR (r2 <= .3 AND slope < 0)) OR SellRSIrev) )
+ AND ((r2w >= .6 AND( slopew > 0))  OR (r2w <= .3 AND slopew < 0) OR SellRSIw )    );// OR SellRSIrev 
+
+AddColumn( Close, "Close" );
+
+Title="IFT-RSI TimeFrame";
+_SECTION_END();

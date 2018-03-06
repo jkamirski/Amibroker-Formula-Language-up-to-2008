@@ -1,0 +1,36 @@
+// Adaptive Price Zone Indicator & system
+////////////////////////////////
+function DblSmoothEMA( price, Length )
+{
+   period = IIf( Length < 0, 1, sqrt( Length ) );
+   smooth = 2 / ( period + 1 );
+   return AMA( AMA( price, smooth ), smooth );
+}
+price = ParamField("Price");
+period = Param("period", 20, 2, 100 );
+BandPct = Param("width[%]", 1.4, 0.1, 4, 0.1 );
+DsEMA = DblSmoothEMA( price, period );
+RangeDsEMA = DblSmoothEMA( H - L, period );
+UpBand = BandPct * RangeDsEMA + DsEMA;
+DnBand = DsEMA - BandPct * RangeDsEMA ;
+Plot( C, "Price", colorBlack, styleCandle );
+Plot( UpBand , "UpBand", colorLightGrey );
+Plot( DnBand , "DownBand", colorLightGrey );
+// you may uncomment lines below to get 'cloud' chart
+// if you are using version 4.80 or higher
+// PlotOHLC( UpBand, UpBand, DnBand, DnBand, "Band",
+// ColorRGB( 245,245,255), styleCloud );
+SetTradeDelays( 1, 1, 1, 1 );
+ADXThshold = 30;
+ADXValue = ADX( 14 );
+Buy = ADXValue <= ADXThshold AND Low <= DnBand;
+Short = ADXValue <= ADXThshold AND High >= UpBand;
+Sell = Cover = ADXValue > ADXThshold;
+if( Status("action") == actionIndicator )
+{
+ Equity(2);
+ PlotShapes( Buy * shapeUpArrow, colorGreen, 0, DnBand, -24 );
+ PlotShapes( Sell * shapeDownArrow, colorRed, 0, UpBand, -24 );
+ PlotShapes( Short * shapeHollowDownArrow, colorRed, 0, UpBand, -24 );
+ PlotShapes( Cover * shapeHollowUpArrow, colorGreen, 0, DnBand, -24 );
+}

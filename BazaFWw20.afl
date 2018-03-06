@@ -1,0 +1,2 @@
+baza=Close-Foreign("WIG20","Close");
+Plot(baza,"Baza",colorYellow,styleLine); 

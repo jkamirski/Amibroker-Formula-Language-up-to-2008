@@ -1,0 +1,62 @@
+/*
+
+In "Average True Range Trailing Stops" article Sylvain Vervoort continues his study of various trailing stop
+ techniques. Implementing modified average true range stops is easy in AmiBroker Formula Language 
+thanks to its built-in looping support, so we don't need any external DLLs. A ready-to-use formula 
+for the article is presented in the Listing 1. The formula is an enhanced version of previous month one.
+ In addition to fixed and standard ATR presented last month, it allows the user to select Modified ATR method 
+from the "Stop Mode" list. Most part of the code is unchanged, we added only new part for calculation of 
+modified ATR. To use it, enter the formula in the Editor, then press "Apply Indicator". 
+In order to adjust stop mode and its parameters you can click on the chart with right mouse button and select
+ "Parameters" from the context menu. 
+*/
+Version(5.20); // requires v5.20
+SetBarsRequired(sbrAll);
+
+// get start date
+Start = Cross( DateNum(), ParamDate("Start Date", "2005-10-30" ) );
+Started = Flip( Start, 0 );
+StopMode = ParamToggle(" StopMode", "Fixed|Chandelier");
+StopLevel = Param("Fixed perc %", 14, 0.1, 50, 0.1)/100;
+StopATRFactor = Param("Chandelier ATR multiple", 4, 0.5, 10, 0.1 );
+StopATRPeriod = Param("Chandelier ATR period", 14, 3, 50 );
+
+// calculate support and resistance levels
+if( StopMode == 0 ) // fixed percent trailing stop
+{
+ sup = C * ( 1 - stoplevel );
+ res = C * ( 1 + stoplevel );
+}
+else // Chandelier ATR-based stop
+{
+ sup = C - StopATRFactor * ATR( StopATRPeriod );
+ res = C + StopATRFactor * ATR( StopATRPeriod );
+}
+
+// calculate trailing stop line
+trailARRAY = Null;
+trailstop = 0;
+for( i = 1; i < BarCount; i++ )
+{
+ if( Started[ i ] == 0 ) continue;
+
+ if( C[ i ] > trailstop AND C[ i - 1 ] > trailstop )
+   trailstop = Max( trailstop, sup[ i ] );
+ else
+ if( C[ i ] < trailstop AND C[ i - 1 ] < trailstop )
+   trailstop = Min( trailstop, res[ i ] );
+ else
+   trailstop = IIf( C[ i ] > trailstop, sup[ i ], res[ i ] );
+
+ trailARRAY[ i ] = trailstop;
+}
+
+// generate buy/sell signals based on crossover with trail stop line
+Buy = Start OR Cross( C, trailArray );
+Sell = Cross( trailArray, C );
+
+PlotShapes(Buy*shapeUpArrow,colorGreen,0,trailarray);
+PlotShapes(Sell*shapeDownArrow,colorRed,0,trailarray);
+
+Plot( Close,"Price",colorBlack,styleCandle);
+Plot( trailARRAY,"trailing stop level", colorRed );

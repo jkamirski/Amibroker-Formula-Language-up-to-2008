@@ -1,0 +1,482 @@
+_SECTION_BEGIN("Price1");
+SetChartOptions(0,chartShowArrows|chartShowDates);
+_N(Title = StrFormat("{{NAME}} - {{INTERVAL}} {{DATE}} Open %g, Hi %g, Lo %g, Close %g (%.1f%%) {{VALUES}}", O, H, L, C, SelectedValue( ROC( C, 1 ) ) ));
+Plot( C, "Close", ParamColor("Color", colorBlack ), styleNoTitle | ParamStyle("Style") | GetPriceStyle() ); 
+_SECTION_END();
+
+_SECTION_BEGIN("ABKPTrendBias2");
+/* TSKPTrendBias with TSKPSEB */
+parmTBStyle = ParamStyle("TB Style", styleLine, maskAll);
+parmTBColor = ParamColor("TB", colorRed);
+parmTBSlowStyle = ParamStyle("TB Slow Style", styleLine | styleThick, maskAll);
+parmTBSlowColor = ParamColor("TB Slow", colorBlue);
+dummy =  E_TSKPTRENDBIAS(High,Low,Close);
+KPTB = tskp_sb;
+KPTBSlow = tskp_tbxavg;
+Plot(KPTB, "TB", parmTBColor, parmTBStyle); 
+Plot(KPTBSlow, "TBSlow", parmTBSlowColor, parmTBSlowStyle); 
+
+/* Standard Error Bands */
+// user parameters
+Periods = Param("Standard Error", 80, 3, 200, 1); 
+Smooth  = Param("Smooth",14,2,100,1);
+parmMBColor = ParamColor("Color MB",colorBlack);  
+parmMBStyle = ParamStyle("Style MB", style=styleDashed | styleNoLabel, Mask=maskAll );
+parmUBColor = ParamColor("Color UB",colorBlack);
+parmUBStyle = ParamStyle("Style UB", style=styleLine | styleNoLabel, Mask=maskAll ); 
+parmLBColor = ParamColor("Color LB",colorBlack);
+parmLBStyle = ParamStyle("Style LB", style=styleLine | styleNoLabel, Mask=maskAll ); 
+parmToneColorUp = ParamColor("Tone Color Up", ColorRGB(167, 224, 243) );
+parmToneColorDn = ParamColor("Tone Color Dn", ColorRGB(255, 192, 203) );
+parmTrendColorUp = ParamColor("Trend Color Up", ColorRGB(167, 224, 243) );
+parmTrendColorDn = ParamColor("Trend Color Dn", ColorRGB(255, 192, 203) );
+
+// calculations
+LRCurve = LinearReg( KPTB, periods ); 
+MALRCurve  = MA(LRCurve, Smooth);
+SEValue = StdErr(KPTB, periods ); 
+SErrorAvg =  MA(SEValue, Smooth);
+
+LowerBand = MALRCurve - SErrorAvg ;
+UpperBand = MALRCurve + SErrorAvg ;
+
+Plot( MALRCurve , "MidBand", parmMBColor , parmMBStyle); 
+Plot( UpperBand , "UpperBand",parmUBColor ,parmUBStyle );
+Plot( LowerBand , "LowerBand", parmLBColor , parmLBStyle);
+PlotOHLC( UpperBand, UpperBand, LowerBand, LowerBand, "Band", IIf(KPTBSlow >= MALRCurve, parmTrendColorUp, parmToneColorDn) , styleCloud | styleNoLabel); 
+//plot Tone
+RibbonSize = Param("Ribbon Size", 1 , 0.5, 10, 0.5);
+
+Plot( RibbonSize, "Tone", IIf(KPTB > KPTBSlow, parmToneColorUp, parmToneColorDn) , styleArea |  styleNoLabel | styleOwnScale , 0, 10);
+_SECTION_END();
+
+_SECTION_BEGIN("ABKPSEB");
+/* Standard Error Bands */
+// user parameters
+Periods = Param("Standard Error", 120, 3, 200, 1); 
+Smooth  = Param("Smooth",30,2,100,1);
+parmMBColor = ParamColor("Color MB",colorBlack);  
+parmMBStyle = ParamStyle("Style MB", style=styleDashed | styleNoLabel, Mask=maskAll );
+parmUBColor = ParamColor("Color UB",colorBlack);
+parmUBStyle = ParamStyle("Style UB", style=styleLine | styleNoLabel, Mask=maskAll ); 
+parmLBColor = ParamColor("Color LB",colorBlack);
+parmLBStyle = ParamStyle("Style LB", style=styleLine | styleNoLabel, Mask=maskAll ); 
+ParmCloud = ParamToggle("Cloud", "No|Yes", 0);
+parmCloudColor = ParamColor("Cloud Color", ColorRGB( 245,245,255) );
+ParmField = ParamField("Field", -1);
+parmTT = ParamToggle("Plot Tone/Trend", "No|Yes");
+parmToneColorUp = ParamColor("Tone Color Up", ColorRGB(167, 224, 243) );
+parmToneColorDn = ParamColor("Tone Color Dn", ColorRGB(255, 192, 203) );
+parmTrendColorUp = ParamColor("Trend Color Up", ColorRGB(167, 224, 243) );
+parmTrendColorDn = ParamColor("Trend Color Dn", ColorRGB(255, 192, 203) );
+RibbonSize = Param("Ribbon Size", 1 , 0.5, 10, 0.5);
+
+// calculations
+LRCurve = LinearReg( ParmField, periods ); 
+MALRCurve  = MA(LRCurve, Smooth);
+SEValue = StdErr( ParmField, periods ); 
+SErrorAvg =  MA(SEValue, Smooth);
+
+LowerBand = MALRCurve - SErrorAvg ;
+UpperBand = MALRCurve + SErrorAvg ;
+
+Plot( MALRCurve , "MidBand", parmMBColor , parmMBStyle); 
+Plot( UpperBand , "UpperBand",parmUBColor ,parmUBStyle );
+Plot( LowerBand , "LowerBand", parmLBColor , parmLBStyle);
+//paint inside the bands
+if(parmCloud == 1)
+{
+	PlotOHLC( UpperBand, UpperBand, LowerBand, LowerBand, "Band", parmCloudColor, styleCloud | styleNoLabel); 
+}
+//paint tone and trend
+if(parmTT == 1)
+{
+	PlotOHLC( UpperBand, UpperBand, LowerBand, LowerBand, "Band", IIf(Low > UpperBand, parmTrendColorUp, IIf(High < LowerBand, parmTrendColorDn, parmCloudColor)) , styleCloud | styleNoLabel); 
+	Plot( RibbonSize, "Tone", IIf(Close > MALRCurve, parmToneColorUp, parmToneColorDn) , styleArea |  styleNoLabel | styleOwnScale , 0, 10);
+}
+_SECTION_END();
+
+// tskp_mediumma,tskp_mediumup,tskp_mediumdown
+
+_SECTION_BEGIN("TSKPMoMo");
+/**********************************************************************************************************
+This is a  Price Study that displays a DOT based on the folowing:
+For a long signal:
+    ScoreCardColor is Blue
+    KPMedium > Moving Average of KPMedium
+    KPFast2 > 0
+    KPFast3 > 0
+    KPTriggerLine > KPStopLine
+    
+For a short signal:
+       ScoreCardColor is Red
+    KPMedium < Moving Average of KPMedium
+    KPFast2 < 0
+    KPFast3 < 0
+    KPTriggerLine < KPStopLine
+
+This signal will reassert itself i.e., display again if one of more of the conditions that trigger go away
+and then return to the trigger state.
+
+
+Note:  This indicator is calculated at the completion of a price bar.  This is different than 
+some indicators where the values are calculated/updated upon the arrival
+of every tick.  
+
+
+************************************************************************************************************/
+
+
+
+blsLong = 0;
+
+
+
+KPStopLine = E_TSKPSTOPLINE(High,Low,Close);
+// tskp_upsell, tskp_triggerline, tskp_triggerlinevma
+sw = E_TSKPUPSELL(Open,High,Low,Close,Volume);
+KPTriggerLine = tskp_triggerline;
+KPFast3Val = IIf((E_TSKPFAST3(Open,High,Low,Close,Volume)> 0),1, -1);
+//tskp_fast2val1, tskp_fast2val2
+dummy = E_TSKPFAST2(Open,High,Low,Close,Volume);
+KPFast2Val = IIf ((tskp_fast2val1 > 0),1,-1); 
+
+
+
+Ctmpl = E_TSKPCOLORTMPL(Open,High,Low,Close,Volume);
+sctotal = 0;
+sctotal = sctotal  + IIf(tskp_colortmplcnd0 > 0, 1, -1); 
+sctotal = sctotal  + IIf(tskp_colortmplcnd1 > 0, 1, -1); 
+sctotal = sctotal  + IIf(tskp_colortmplcnd2 > 0, 1, -1); 
+sctotal = sctotal  + IIf(tskp_colortmplcnd3 > 0, 1, -1); 
+sctotal = sctotal  + IIf(tskp_colortmplcnd4 > 0, 1, -1); 
+sctotal = sctotal  + IIf(tskp_colortmplcnd5 > 0, 1, -1); 
+sctotal = sctotal  + IIf(tskp_colortmplcnd6 > 0, 1, -1); 
+sctotal = sctotal  + IIf(tskp_colortmplcnd7 > 0, 1, -1); 
+sctotal = sctotal  + IIf(tskp_colortmplcnd8 > 0, 1, -1); 
+
+// tskp_mediumma,tskp_mediumup,tskp_mediumdown
+dummy = E_TSKPMEDIUM(Close);
+KPMediumUP = tskp_mediumup;
+KPMediumDwn = tskp_mediumdown;
+KPMediumMA = tskp_mediumma;
+
+// -- Create 0-initialized arrays the size of barcount
+aHPivs = H - H;
+aLPivs = L - L;
+aHiVal = H - H;
+aLoVal = L - L;
+
+
+for (curBar=5; curBar < BarCount-1; curBar++)
+{
+
+
+	if( (blsLong == -1) OR (blsLong == 0))
+	  {
+       if ((sctotal[CurBar]  >= 5) AND (KPMediumUP[CurBar]  > KPMediumMA[CurBar] ) AND (KPFast3Val[CurBar]  == 1) AND 
+        (KPFast2Val[CurBar]  == 1) AND (KPTriggerLine[CurBar]  >= KPStopLine[CurBar] ))
+       {
+         blsLong = 1;
+		  aLPivs[CurBar] = 1;
+		  aLoVal[CurBar] = Low[CurBar];
+       }
+    }
+
+	if( (blsLong == 1) OR (blsLong == 0))
+	  {
+       if ((sctotal[CurBar]  <= -5) AND (KPMediumDwn[CurBar]  < KPMediumMA[CurBar] ) AND (KPFast3Val[CurBar]  == -1) AND 
+       (KPFast2Val[CurBar]  == -1) AND (KPTriggerLine[CurBar]  <= KPStopLine[CurBar] ))
+       {
+         blsLong = -1;
+         aHPivs[Curbar] = 1;
+		  aHiVal[Curbar] = High[Curbar];
+       }
+    }
+
+    if ((blsLong == 1) AND ((sctotal[CurBar]  < 5) OR (KPMediumUP[CurBar]  < KPMediumMA[CurBar] )  OR  
+       (KPFast2Val[CurBar]  < 1)  OR  (KPFast3Val[CurBar]  < 1) OR (KPTriggerLine[CurBar]  < KPStopLine[CurBar] )) )
+       {
+           blsLong= 0;
+        }
+          
+      if ((blsLong == -1) AND ((sctotal[CurBar]  > -5)  OR  (KPMediumDwn[CurBar] > KPMediumMA[CurBar] )  OR  
+         (KPFast2Val[CurBar]  > -1)  OR (KPFast3Val[CurBar]  > -1)  OR 
+         (KPTriggerLine[CurBar]  > KPStopLine[CurBar] )) )
+         {
+            blsLong = 0;
+         }
+}
+
+PlotShapes(
+IIf(aHPivs == 1,  shapeCircle,shapeNone), colorRed ,0, aHiVal+0.00, Offset = 30);
+
+PlotShapes(
+IIf(aLPivs == 1,  shapeCircle,shapeNone), colorAqua  ,0, aLoVal-0.00, Offset = -30);
+ 
+_SECTION_END();
+
+_SECTION_BEGIN("TSKPPIVOTPOP");
+BarCancl = Param( "BarCancel", 4, 1, 20, 1 );
+frMeanSwing = Param( "MeanSwing Filter", 1, 0, 1, 1 ); // 1- Use MeanSwing Filter, 0-Donot use MeanSwing Filter
+
+
+CHiPr = 0;
+CLoPr = 9999999;
+blsLong = 0;
+PrevCOBar = 0;
+NumBars = 0;
+PrePP = 0;
+PrevLowVal = 9999999;
+BuySig = 0;
+SellSig = 0;
+blsShort = 0;
+PrevHiVal = 0;
+blsNewCO = 0;
+BarDif   = 0;
+CanclBar = 0;
+
+KPA900Val = E_TSKPA900(Close);
+KPAutoStopVal = E_TSKPAUTOSTOP(High,Low,Close);
+//KPFast3Val = IIf((E_TSKPFAST3(Open,High,Low,Close,Volume)> 0),1, -1);
+dummy = E_TSKPFAST2(Open,High,Low,Close,Volume);
+KPFast2Val = IIf((tskp_fast2val1 > 0),1,-1);
+
+UpperBand = BBandTop(Close,20,1);
+LowerBand = BBandBot(Close,20,1);
+swVal = E_TSKPSWINGLINE(High,Low,Close);
+MeanSwingLnVal = tskp_swmean;
+
+// -- Create 0-initialized arrays the size of barcount
+aHPivs = H - H;
+aLPivs = L - L;
+aHiVal = H - H;
+aLoVal = L - L;
+
+
+Ctmpl = E_TSKPCOLORTMPL(Open,High,Low,Close,Volume);
+sctotal = 0;
+sctotal = sctotal  + IIf(tskp_colortmplcnd0 > 0, 1, -1); 
+sctotal = sctotal  + IIf(tskp_colortmplcnd1 > 0, 1, -1); 
+sctotal = sctotal  + IIf(tskp_colortmplcnd2 > 0, 1, -1); 
+sctotal = sctotal  + IIf(tskp_colortmplcnd3 > 0, 1, -1); 
+sctotal = sctotal  + IIf(tskp_colortmplcnd4 > 0, 1, -1); 
+sctotal = sctotal  + IIf(tskp_colortmplcnd5 > 0, 1, -1); 
+sctotal = sctotal  + IIf(tskp_colortmplcnd6 > 0, 1, -1); 
+sctotal = sctotal  + IIf(tskp_colortmplcnd7 > 0, 1, -1); 
+sctotal = sctotal  + IIf(tskp_colortmplcnd8 > 0, 1, -1); 
+
+
+for (CurBar=1; CurBar < BarCount-1; CurBar++)
+{
+
+	if ( CurBar == 1 )
+	{
+		CHiPr = High[CurBar];
+		CHiBar = CurBar;
+		CLoPr = Low[CurBar];
+		CLoBar = CurBar;
+		blsLong = 0;
+		blsShort = 0;
+		blsNewCO = 0;
+		PrePP = 0;
+		PrevCOBar = 0;
+		PrevHiVal = High[CurBar];
+		PrevLowVal = Low[CurBar];
+		BuySig = 0;
+		SellSig = 0;
+		CanclBar = 0;
+	}
+
+	if (High[CurBar] >= CHiPr) {
+		CHiPr = High[CurBar];
+		ChiBar = CurBar;
+	}
+
+	if (Low[CurBar] <= CLoPr) {
+		CLoPr = Low[CurBar];
+		CLoBar = CurBar;
+	}
+
+	if ( (KPA900Val[CurBar] > KPAutoStopVal[Curbar]) ){
+		if ( (blsLong!= 1) ){
+			blsNewCO = 1;
+			SellSig = 0;
+			blsLong = 1;
+			blsShort = 0;
+			BarDif = CurBar - PrevCOBar;
+			if ( (BarDif >= NumBars) AND (PrePP != -1) AND (CLoPr >= PrevLowVal)){
+				PrevCOBar = CurBar;
+				CanclBar = CurBar + BarCancl;
+				BuySig = 1;
+			}
+		}
+	}
+	else {
+		if ((blsShort != 1)) {
+			blsNewCO = 1;
+			BuySig = 0;
+			blsLong = 0;
+			blsShort = 1;
+			BarDif = CurBar - PrevCOBar;
+			if ((BarDif >= NumBars) AND (PrePP != 1) AND (CHiPr <= PrevHiVal) ){
+				PrevCOBar = CurBar;
+				CanclBar = CurBar + BarCancl;
+				SellSig = 1;
+			}
+		}
+	}
+
+
+	if( (BuySig ==1) AND (CurBar <= CanclBar) AND (KPA900Val[curBar] >= KPAutoStopVal[curbar]) ){
+		if( (KPFast2Val[CurBar]  == 1) AND  (sctotal[CurBar] >= 5) AND (blsLong == 1)
+			AND (((frMeanSwing ==1 ) AND (Close[Curbar] > MeanSwingLnVal[Curbar])) OR (frMeanSwing==0)) AND (Close[Curbar] > UpperBand[CurBar])
+			AND (Close[Curbar] > Open[Curbar]) ){
+				aLPivs[Curbar] = 1;
+				aLoVal[Curbar] = Low[Curbar];
+				BuySig = 0;
+		}
+		else {
+			 if ( (BuySig == 1) AND ((CurBar > CanclBar) OR  (KPA900Val[CurBar] < KPAutoStopVal[Curbar]) ) ){
+				BuySig = 0;
+			}
+		}
+	}
+	else BuySig = 0;
+
+
+
+	if( (SellSig ==1) AND (CurBar <= CanclBar) AND (KPA900Val[CurBar] <= KPAutoStopVal[Curbar]) ){
+		if( (KPFast2Val[CurBar]  == -1) AND  (sctotal[CurBar] <= -5) AND (blsShort == 1) 
+			AND (((frMeanSwing ==1 ) AND (Close[Curbar] < MeanSwingLnVal[Curbar])) OR (frMeanSwing==0)) AND (Close[Curbar] < LowerBand[CurBar]) 
+			AND (Close[Curbar] < Open[Curbar]) ){
+
+				aHPivs[Curbar] = 1;
+				aHiVal[Curbar] = High[Curbar];
+				SellSig = 0;
+		}
+		else {
+			if ( (SellSig == 1) AND ((CurBar > CanclBar) OR  (KPA900Val[CurBar] > KPAutoStopVal[Curbar]) ) ){
+				SellSig = 0;
+			}
+		}
+	}
+	else SellSig = 0;
+			
+
+
+
+	if ( (blsNewCO == 1) ) { 
+		if ((sctotal[CurBar] >= 5) AND (blsLong == 1) AND (PrePP != -1) ) {
+			blsNewCO = 0;
+			PrePP = -1;
+			PrevLowVal = CLoPr;
+			CHiPr = High[CurBar];
+			CHiBar = CurBar;
+			CLoPr = Low[Curbar];
+			CLoBar = CurBar;
+		} 
+		else 
+			if ( (sctotal[CurBar] <= -5) AND (blsShort == 1) AND (PrePP != 1) ) {
+			blsNewCO = 0;
+			PrePP = 1;
+			PrevHiVal = CHiPr;
+			CHiPr = High[CurBar];
+			CHiBar = CurBar;
+			CLoPr = Low[CurBar];
+			CLoBar = CurBar;
+			} 
+	}
+
+}
+
+PlotShapes(
+IIf(aHPivs == 1,  shapeDownArrow,shapeNone), colorDarkRed ,0, aHiVal+0.00, Offset = -20);
+
+PlotShapes(
+IIf(aLPivs == 1,  shapeUpArrow,shapeNone), colorDarkBlue,0, aLoVal-0.00, Offset = -20);
+_SECTION_END();
+
+_SECTION_BEGIN("TSKPPOWERPOP");
+blsLong = 0;
+
+KP115Val = E_TSKP115SPLIT(High,Low,Close);
+KP104Val = E_TSKP104(High,Low,Close); 
+dummy = E_TSKPMEDIUM(Close);
+KPMediumUpVal = tskp_mediumup;
+KPMediumDnVal = tskp_mediumdown;
+UpperBand = BBandTop(Close,20,1);
+LowerBand = BBandBot(Close,20,1);
+swVal = E_TSKPSWINGLINE(High,Low,Close);
+MeanSwingLnVal = tskp_swmean;
+
+
+Ctmpl = E_TSKPCOLORTMPL(Open,High,Low,Close,Volume);
+sctotal = 0;
+sctotal = sctotal  + IIf(tskp_colortmplcnd0 > 0, 1, -1); 
+sctotal = sctotal  + IIf(tskp_colortmplcnd1 > 0, 1, -1); 
+sctotal = sctotal  + IIf(tskp_colortmplcnd2 > 0, 1, -1); 
+sctotal = sctotal  + IIf(tskp_colortmplcnd3 > 0, 1, -1); 
+sctotal = sctotal  + IIf(tskp_colortmplcnd4 > 0, 1, -1); 
+sctotal = sctotal  + IIf(tskp_colortmplcnd5 > 0, 1, -1); 
+sctotal = sctotal  + IIf(tskp_colortmplcnd6 > 0, 1, -1); 
+sctotal = sctotal  + IIf(tskp_colortmplcnd7 > 0, 1, -1); 
+sctotal = sctotal  + IIf(tskp_colortmplcnd8 > 0, 1, -1); 
+
+
+// -- Create 0-initialized arrays the size of barcount
+aHPivs = H - H;
+aLPivs = L - L;
+aHiVal = H - H;
+aLoVal = L - L;
+
+
+
+for (curBar=5; curBar < BarCount-1; curBar++)
+{
+	if (blsLong != 1) {
+		if( (sctotal[curBar] >= 5) AND (KPMediumUpVal[curBar] > 1.75) AND (Close[curBar] > UpperBand[curBar]) 	
+			AND (Close[curBar] > KP115Val[curBar]) AND (Close[curBar] > KP104Val[curBar]) 
+			AND (High[curBar] > High[curBar-3]) AND (Close[curBar] > Close[curBar-3]) 
+			AND (Close[CurBar] > MeanSwingLnVal[CurBar] ) ){
+				blsLong = 1;
+				aLPivs[curBar] =1;
+				aLoVal[curBar] = Low[curBar];
+		}
+	}
+	else if (blsLong != -1) {
+		if( (sctotal[curBar] <= -5) AND (KPMediumDnVal[curBar] < -1.75) AND (Close[curBar] < LowerBand[curBar]) 	
+			AND (Close[curBar] < KP115Val[curBar]) AND (Close[curBar] < KP104Val[curBar]) 
+			AND (Low[curBar] < Low[curBar-3]) AND (Close[curBar] < Close[curBar-3])
+			AND (Close[curBar] < MeanSwingLnVal[curBar] ) ){
+				blsLong = -1;
+				aHPivs[curBar] =1;
+				aHiVal[curBar] = High[curBar];
+			}
+	}
+}
+
+PlotShapes(
+IIf(aHPivs == 1,  shapeCircle,shapeNone), colorYellow,0, aHiVal+0.00, Offset = 35);
+
+PlotShapes(
+IIf(aLPivs == 1,  shapeCircle,shapeNone), colorYellow,0, aLoVal-0.00, Offset = -35);
+
+
+
+				
+_SECTION_END();
+
+_SECTION_BEGIN("TSKPPUSHDOTS");
+Combo = E_TSKPCOMBO(Open,High,Low,Close,Volume);
+NewUpDown = E_TSKPNEWUPDOWN(Open,High,Low,Close,Volume);
+UpDown7 = 0.5*(High+Low) - E_TSKPSTOPLINE(High,Low,Close);
+
+PlotShapes( IIf( ((Combo>0) AND (NewUpDown > 0) AND (UpDown7 > 0)),shapeSmallCircle,shapeNone), colorWhite,0, Low, -10);
+PlotShapes( IIf( ((Combo<0) AND (NewUpDown < 0) AND (UpDown7 < 0)),shapeSmallCircle,shapeNone), colorDarkRed,0, High, 10);
+_SECTION_END();
+
+_SECTION_BEGIN("TSKPWaterLevel");
+Plot(E_TSKPWATERLEVEL(Open,High,Low,Close,Volume) , _DEFAULT_NAME(), ParamColor( "Color", colorCycle ), ParamStyle("Style",style=styleNoLabel, mask=maskDefault) ); 
+_SECTION_END();
+

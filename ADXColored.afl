@@ -1,0 +1,21 @@
+//Trend Following Systems DO NOT work when ADX is Below 20 - Tech Analysis A-Z; page 120
+
+P1 = Param("Period",10,0,100,1);
+
+MyPDI= PDI(P1);//Positive Directional Indicator
+
+MyMDI= MDI(P1);//Negative Directional Indicator (Minus)
+
+MyADX= ADX(P1);//Average Directional Movement Index
+
+//Green ADX Line=Rising; Red ADX Line=Falling
+
+col = IIf( MyADX > Ref( MyADX, -1 ), colorGreen, colorRed );
+
+Plot( MyPDI,"+DI",colorGreen, styleLine);
+
+Plot( MyMDI,"-DI",colorBlue, styleLine);
+
+Plot( MyADX,"ADX",col, styleLine);
+
+Title=Name()+ " " + Date() + " Price: " + C + EncodeColor(colorIndigo) +"  ADX" + WriteVal( MyADX )+ EncodeColor(colorWhite) + "  +DMI" + WriteVal( MyPDI )+ EncodeColor(colorBlue) + "  -DMI" + WriteVal( MyMDI );

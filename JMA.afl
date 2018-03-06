@@ -1,0 +1,4 @@
+Length=Param( "Length ", 10, 0, 500);
+Phase=Param( "Phase", 0, -100, 100);
+
+Plot( JurikJMA( Close, Length, Phase), _DEFAULT_NAME(), ParamColor( "Color", colorCycle ), ParamStyle("Style") );

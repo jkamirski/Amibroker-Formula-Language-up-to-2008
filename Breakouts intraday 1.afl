@@ -1,0 +1,46 @@
+_SECTION_BEGIN("Breakouts intraday");
+    /* Volatility modified FVE chart
+
+    ** plus Volatility color-coded Volume chart + trading system
+    ** TJ for S&C Traders Tips Sep 2003,
+    */
+    Period = Param("Period for FVE", 24, 5, 80, 1 );
+    Coeff = Param("Coeff for Cutoff", 0.1, 0, 2, 0.01 );
+    intra=log(H)-log(L);
+    Vintra = StDev(intra, period );
+    inter = log(Avg)-log(Ref(Avg,-1));
+    Vinter = StDev(inter,period);
+    Cutoff = Coeff * (Vinter+Vintra)*C;
+    MF = C- (H+L)/2 + Avg - Ref( Avg, -1 );
+    VC = IIf( MF > Cutoff, V,
+    IIf( MF < -Cutoff, -V, 0 ));
+    FVE = 100 * Sum( VC, Period )/(MA( V, Period ) * Period );
+    Plot( FVE, "Modified FVE", colorYellow, styleThick );
+    // volatility color-coded volume bars:
+    BarColor =
+    IIf( MF > Cutoff,  colorGreen, /* up volume */
+    IIf( MF < -Cutoff, colorRed, /* down volume */
+                       colorBlue /*otherwise*/ ));
+    Plot( Volume, "Volume", BarColor, styleHistogram | styleThick | styleOwnScale );
+    /* Trading system */
+    SetTradeDelays(0,0,0,0);
+    PositionSize = 10000; // fixed position size - remove to enable compounding
+    RoundLotSize = 10;
+    BuyPrice = Close; SellPrice = Close;
+    RAD_TO_DEG = 180/3.1415926; // radians to degrees
+    LinRegAngleFVE = RAD_TO_DEG * atan( LinRegSlope( FVE, 20 ) );
+    Buy = FVE < 10 AND
+    FVE > -20 AND
+    LinRegAngleFVE > 30 AND
+    FVE > EMA( FVE, 40 ) AND
+    LinRegSlope( C, 30 ) < Ref(C, -30 ) *0.6/100 AND
+    LinRegSlope( C, 30 ) > -Ref( C, -30 ) * 0.3/100;
+    Sell = LinRegAngleFVE < -30;
+
+
+shape = Buy * shapeHollowUpArrow + Sell * shapeHollowDownArrow;
+
+
+PlotShapes( shape, IIf( Buy, colorYellow, colorPink ), 0,IIf( Buy, Ref(fve,-1)*0.9, Ref(fve,-1)*1.05)  );
+
+_SECTION_END();

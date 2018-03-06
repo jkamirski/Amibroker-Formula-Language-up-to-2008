@@ -1,0 +1,2 @@
+col = IIf( Close > Ref( Close, -1 ), colorGreen, colorRed );
+Plot( Close, "Price", col, styleCandle );

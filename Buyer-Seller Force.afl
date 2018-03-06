@@ -1,0 +1,26 @@
+/* Buyer-Seller Force
+
+This indicator illustrates the amount of buying or selling pressure
+being exerted on the security.  When in positive territory, the buyers have
+the upper hand.  When in negative the sellers rule.
+
+When divergence occurs, the price will tend to correct toward the indicator.
+
+This is specifically written for east coast time NYSE hours.  The code must be
+adjusted for any other equities/markets.
+*/
+
+day_open_time = (Hour() == 8 AND Minute() == 30);
+
+c_vel = (C - Ref(C, -1)) / Ref(C, -1);
+h_vel = (H - Ref(H, -1)) / Ref(H, -1);
+l_vel = (L - Ref(L, -1)) / Ref(L, -1);
+p_vel = c_vel + h_vel + l_vel;
+
+immediate_pressure = p_vel * V;
+
+numminutes = BarsSince(day_open_time);
+day_pressure = Sum(immediate_pressure, numminutes + 1);
+
+Plot(day_pressure, "BSF", colorBlack);
+Plot(0,"",colorRed,styleLine);

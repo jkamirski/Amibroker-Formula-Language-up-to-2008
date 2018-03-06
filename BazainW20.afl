@@ -1,0 +1,2 @@
+baza=Foreign("FW20H7","Close")-Close;
+Plot(baza,"Baza",colorRed,styleLine); 

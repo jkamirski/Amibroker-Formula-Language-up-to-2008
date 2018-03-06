@@ -1,0 +1,100 @@
+
+pds=Param("Periods",20,0,100,1);
+pdsatr=Param("Periods ATR",10,0,100,1);
+
+EntrySignal = C > ( LLV( L, pds ) + 2 * ATR( pdsatr ) );
+ExitSignal = C < ( HHV( H, pds ) - 2 * ATR( pdsatr ) );
+Color = IIf( EntrySignal, colorBlue, IIf( ExitSignal, colorOrange, colorGrey50 ));
+
+TrailStop = HHV( C - 2 * ATR(pdsatr), 15 );
+ProfitTaker = EMA( H, 13 ) + 2 * ATR(pdsatr);
+/* plot price chart and stops */
+Plot( TrailStop, "Trailing stop", colorBrown, styleThick | styleLine );
+Plot( ProfitTaker, "Profit taker", colorLime, styleThick );
+Plot( C, "Price", Color, styleCandle | styleThick );
+
+/* plot color ribbon */
+Plot( 1, "", Color, styleArea | styleOwnScale | styleNoLabel, -0.1, 50 );     
+/*
+value2=0;
+value3=0;
+value11=0;
+x1=0;
+x2=0;
+Range=0;
+val1=0;
+val2=0;
+shift=0;
+abrs=0;
+s=1.5;
+p=0;
+r=0;
+r1=0;
+value21=0;
+prev=0;
+d=2.3;
+f=7;
+h11=0;
+h12=0;
+h13=0;
+const=0;
+orig=0;
+st=0;
+h2=0;
+h1=0;
+h10=0;
+sxs=0;
+sms=0;
+temp=0;
+a1=0;
+per1=0;
+a1x=0;
+h5=0;
+tsig=0;
+r1s=0;
+r2s=0;
+r3s=0;
+r4s=0;
+pt=0;
+pts=0;
+r2=0;
+r3=0;
+r4tt=0;
+
+NumBars=500;
+Bars=BarsSince(C>0);
+st=1;
+if (st == 1)
+   {
+   value11 = 9;
+   x1 = 53;
+   x2 = 47;
+   if (Bars < NumBars) abrs = Bars - 11; else abrs = NumBars - 11;
+   
+  shift=abrs;
+
+
+while(shift>=0)
+
+      {
+      Range = Ref(ATR(f),shift);
+      value2 = StochD(Null,0,value11,value11,1,0,0,0,shift);
+      val1 = 0;
+      val2 = 0;
+      if (value2 < x2 & abs((Ref(Close,shift) - (Ref(Close,shift + 2)) > Range / d) 
+         {
+         if (p == 2 | p == 0);
+            {
+            value3 = Ref(High,shift) + Range * s / 4;
+            val1 = value3;
+            p = 1;
+            }
+         }
+      if (value2 > x1 & abs(Close[shift] - Close[shift + 2]) > Range / d) 
+         {
+         if (p == 1 | p == 0 )
+            {
+            value3 = Low[shift] - Range * s / 4;
+            val2 = value3;
+            p = 2;
+            }

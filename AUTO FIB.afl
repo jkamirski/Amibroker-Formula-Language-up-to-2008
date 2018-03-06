@@ -1,0 +1,71 @@
+/*---------------------------------------------------
+	Another Fib Level
+	Based on Aron Pipa's formula , December, 11, 2005
+	
+   * Under Parameters, select "axis & Grid" , 
+     "show date axis" = "yes"
+	* Dash lines are the fib extentions
+	* If you are not familiar with begin/end values double 
+	click a lot around the screen til you get the idea 
+	* Select your fib retrace in a higher timeframe e.g. 
+	daily and view chart in e.g. 5 min, to see magor 
+	retracement  lines.
+--------------------------------------------------------*/
+EnableTextOutput(0);
+
+// Get values for fib levels 
+StartBar=BeginValue(BarIndex());
+FinishBar = EndValue( BarIndex() ); 
+LastBar=BarCount-1;
+period = FinishBar - StartBar;
+Lo =LLV(L,period);
+Hi = HHV(H,period);
+
+i = startbar;
+for( i = startbar; i < finishbar; i++ )
+{
+Line100 = EndValue(H);
+Line0 = BeginValue(L);
+Line1 = Line0 + abs(Line100-Line0)*0.236;
+Line2 = Line0 + abs(Line100-Line0)*0.382;
+Line3 = Line0 + abs(Line100-Line0)*0.5;
+Line4 = Line0 + abs(Line100-Line0)*0.618;
+}
+
+// fib lines, the "x" is the extension
+fib0= LineArray(startbar, Line0, finishbar, Line0, 0, 1);fib0x= LineArray(finishbar, Line0, Lastbar, Line0, 0, 1);
+fib100 = LineArray(startbar, Line100, finishbar, Line100, 0, 1);fib100x = LineArray(finishbar, Line100, Lastbar, Line100, 0, 1);
+
+fib1= LineArray(startbar, Line1, finishbar, Line1, 0, 1);fib1x= LineArray(finishbar, Line1, Lastbar, Line1, 0, 1);
+fib2= LineArray(startbar, Line2, finishbar, Line2, 0, 1);fib2x= LineArray(finishbar, Line2, Lastbar, Line2, 0, 1);
+fib3= LineArray(startbar, Line3, finishbar, Line3, 0, 1);fib3x= LineArray(finishbar, Line3, Lastbar, Line3, 0, 1);
+fib4= LineArray(startbar, Line4, finishbar, Line4, 0, 1);fib4x= LineArray(finishbar, Line4, Lastbar, Line4, 0, 1);
+// Plot
+Plot(C,"", colorBlack,styleCandle);
+Plot(fib0,"", colorBlack,styleDots|styleNoRescale);Plot(fib0x,"", colorBlack,styleDashed|styleNoRescale);
+Plot(fib100,"", colorTan,styleDots|styleNoRescale);Plot(fib100x,"", colorTan,styleDashed|styleNoRescale);
+Plot(fib1,"", colorRed,styleNoRescale);Plot(fib1x,"", colorRed,styleDashed|styleNoRescale);
+Plot(fib2,"", colorBlue,styleNoRescale);Plot(fib2x,"", colorBlue,styleDashed|styleNoRescale);
+Plot(fib3,"", colorGreen,styleNoRescale);Plot(fib3x,"", colorGreen,styleDashed|styleNoRescale);
+Plot(fib4,"", colorBrown,styleNoRescale);Plot(fib4x,"", colorBrown,styleDashed|styleNoRescale);
+// Title
+Title="\n Automatic Fib Levels  "+Date()        +"\n"+
+EncodeColor( colorTan )  + " 100%  = "+Line100 +"  " +"\n"+
+EncodeColor( colorBlack )  + " 61.8% = "+EncodeColor( colorBrown )+Line4   +"  " +"\n"+
+EncodeColor( colorBlack )  + " 50.0% = "+EncodeColor( colorGreen )+Line3   +"  " +"\n"+
+EncodeColor( colorBlack )   + " 38.2% = "+EncodeColor( colorBlue )+Line2   +"  " +"\n"+
+EncodeColor( colorBlack )    + " 23.6% = "+EncodeColor( colorRed )+Line1   +"  " +"\n"+
+EncodeColor( colorBlack )  + "    0% = "+Line0;
+
+
+
+
+
+
+
+
+
+
+
+
+

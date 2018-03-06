@@ -1,0 +1,20 @@
+_SECTION_BEGIN("Appel's ROC");
+
+x = ROC (C, 5);
+y = ROC (C, 15);
+z = ROC (C, 25);
+
+A = x + y + z;
+
+Plot (A, "Appel's ROC", colorRed);
+
+Plot (4, "", colorBlack, styleNoLabel, styleDashed);
+
+Buy = Cross (A,4);
+Sell = Cross (4,A);
+Filter = Buy OR Sell;
+
+AddColumn( Buy, "Buy", 1);
+AddColumn(Sell, "Sell", 1);
+AddColumn(Close,"Close",1.2);
+AddColumn(Volume,"Volume",1.0);

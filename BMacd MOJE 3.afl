@@ -1,0 +1,54 @@
+_SECTION_BEGIN("BMacd");
+function fMACDLine(input,fa0, fa1)
+{
+	result = EMA(input,fa0) - EMA(input,fa1);
+	return result;
+}
+
+
+function fMACDAvg(input,fa0, fa1, fa2)
+{
+	mymacd1 = EMA(input,fa0) - EMA(input,fa1);
+	result = EMA(mymacd1,fa2);
+
+	return result;
+}
+
+
+function fMacdHisto( input, f0, f1, f2 ) 
+{ 
+	mymacd = EMA(input,f0) - EMA(input,f1);
+	mymacdsig = EMA(mymacd,f2);
+
+	result = mymacd - mymacdsig;
+
+   return result; 
+} 
+
+price = (H+L+C)/3;
+MA1	=Param("MA1", 7,0,100,1);
+MA2 = Param("MA2", 10,0,100,1);
+MA3 = Param("MA3", 5,0,100,1);
+
+MACDHisto   = fMacdHisto( price, MA1, MA2, MA3);
+MACDHistox2 = fMacdHisto( price, MA1*2, MA2*2, MA3*2);
+MACDHistox3 = fMacdHisto( price, MA1*3, MA2*3, MA3*3);
+MACDLine	  = fMacdLine(price, MA1*3, MA2*3);
+MacdAvg     = fMacdAvg(price, MA1*3, MA2*3, MA3*3);
+
+MACDLineColor = IIf(MACDLine>= Ref(MACDLine,-1), colorBlue, colorOrange );
+
+Plot(MACDLine, "MACDLine", MACDLineColor , styleDots|styleLeftAxisScale|styleThick); 
+Plot(MACDAvg, "MACDAvg", colorBlue, styleLine|styleLeftAxisScale); 
+
+Plot(MACDHisto, "MACDHisto", 	IIf(MACDHisto >=0,colorGreen, colorRed), styleHistogram|styleThick );
+//Plot(MACDHistoX2, "MACDHistoX2", colorLime, styleLine | styleStaircase );
+//Plot(MACDHistoX3, "MACDHistoX3", colorBlack, styleLine | styleStaircase );
+
+PullbackUp   = MACDHisto<0 AND MACDHIstox2>0 AND MACDHIstox3>0 AND MACDHisto<Ref(MACDHisto,-1);
+PullbackDown = MACDHisto>0 AND MACDHIstox2<0 AND MACDHIstox3<0 AND MACDHisto>Ref(MACDHisto,-1);
+
+Color = IIf( PullbackUp, colorAqua,IIf(PullbackDown, colorPink, colorTeal));
+
+Plot( 3, "", Color, styleArea | styleOwnScale | styleNoLabel , -0.1, 50);
+_SECTION_END();

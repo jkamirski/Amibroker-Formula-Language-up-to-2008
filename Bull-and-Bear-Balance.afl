@@ -1,0 +1,52 @@
+    /* Bull-Bear Balance indicator */
+    BullPower =
+    IIf( C < O,
+    IIf( Ref( C, -1 ) < O,
+    Max( H - Ref( C, -1 ), C - L ),
+    Max( H - O, C - L ) ),
+    IIf( C > O,
+    IIf( Ref( C, -1 ) > O,
+    H - L,
+    Max( O - Ref( C, -1 ), H - L ) ),
+    IIf( H - C > C - L,
+    IIf( Ref( C, -1 ) < O,
+    Max( H - Ref( C, -1 ), C - L ),
+    H - O ),
+    IIf( H - C < C - L,
+    IIf( Ref( C, -1 ) > O,
+    H - L,
+    Max( O - Ref( C, -1 ), H - L ) ),
+    IIf( Ref( C, -1 ) > O,
+    Max( H - O, C - L ),
+    IIf( Ref( C, -1 ) < O,
+    Max( O - Ref( C, -1 ), H - L ),
+    H - L ) ) ) ) ) );
+    BearPower =
+    IIf( C < O,
+    IIf( Ref( C, -1 ) > O,
+    Max( Ref( C, -1 ) - O, H - L ),
+    H-L ),
+    IIf( C > O,
+    IIf( Ref( C, -1 ) > O,
+    Max( Ref( C, -1 ) - L, H - C ),
+    Max( O - L, H - C ) ),
+    IIf( H - C > C - L,
+    IIf( Ref( C, -1 ) > O,
+    Max( Ref( C, -1 ) - O, H - L ),
+    H - L ),
+    IIf( H - C < C - L,
+    IIf( Ref( C, -1 ) > O,
+    Max( Ref( C, -1 ) - L, H - C ),
+    O - L ),
+    IIf( Ref( C, -1 ) > O,
+    Max( Ref( C, -1 ) - O, H - L ),
+    IIf( Ref( C, -1 ) < O,
+    Max( O - L, H - C ),
+    H - L ) ) ) ) ) );
+    s1=Param("Smooth 1", 20, 1, 100 );
+    s2=Param("Smooth 2", 30, 1, 100 );
+    SmoothBBB= MA(EMA( BullPower,s1)-EMA( BearPower,s1),s2);
+    Caption = "Smoothed BBB ( " + s1 + ", " + s2 + " ) ";
+    Plot( SmoothBBB, Caption, colorBlue, styleHistogram );
+
+

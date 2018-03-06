@@ -1,0 +1,20 @@
+_SECTION_BEGIN("buffs ma");
+/* Buff's Moving Averages */
+
+/* Afl Code - Prakash Shenoi */
+
+/* Modified: 08/07/25 skarpio - parameterized fast/slow colors */
+
+f=Param(" Fast Periods  ",5,1,100); 
+fa=Sum(V*C,f)/Sum(V,f); 
+s=Param("Slow Periods ",10,1,50);
+sl=Sum(V*C,s)/(Cum(V)-Ref(Cum(V),-s));
+Plot (fa,"fast MA",ParamColor("Fast Color", 1),1|styleThick);
+Plot (C,"close",5,64);
+Plot (sl,"Slow MA",ParamColor("Slow Color", 3),1|styleThick);
+GraphXSpace=3;
+Title=Name () + "  Buff Averages  "+"\n"
+	+ "Close = " + WriteVal  (C,1.2) 
+	+ "  Fast MA =  " + WriteVal  (fa,1.2)
+	+ "  Slow MA = "+ WriteVal (sl,1.2);
+_SECTION_END();

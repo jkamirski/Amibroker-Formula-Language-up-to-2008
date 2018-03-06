@@ -1,0 +1,16 @@
+    
+    // Version 1.
+    // ARSI formula
+    // constant period version (looks into the future)
+    Period = Param("ARSI Period", 14, 1, 100 );
+    Chg = C - Ref( C, -1 );
+    UpCount = Sum( Chg >= 0, Period );
+    DnCount = Period - UpCount;
+    UpMove = EMA( Max( Chg, 0 ), SelectedValue( UpCount) * 2 - 1 );
+    DnMove = EMA( Max( -Chg, 0 ), SelectedValue( DnCount ) * 2 - 1 );
+    RS = UpMove/DnMove;
+    ARSI = 100-(100/(1+RS));
+    Plot( ARSI, "ARSI("+Period+")", colorBlue );
+   
+
+

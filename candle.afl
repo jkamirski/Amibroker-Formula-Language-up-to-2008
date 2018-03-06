@@ -1,0 +1,47 @@
+// 'thold' is the threshold for the zig-zag turning points
+// it is set to a minimum of 2.5% (approx, uses log difference
+//  which is more accurate) or a volatility measure
+// based on 2 day range over the past 100 days
+
+min_thold=0.025;
+thold=Max(min_thold,Median(ln(HHV(H,2)/LLV(L,2)),100));
+thold=IIf(IsEmpty(thold),min_thold,thold);
+
+// 't' is a multiplier of 'thold'
+// the larger the value of 't', the more significant the
+// turning point. Adjust it by opening the Parameter window
+// (press ctrl-R)
+
+t=Param("significance",2,2,6,1);
+
+// initialization of variables
+
+d=init=trig=HH=LL=z=0;
+
+// main body
+// this program is different than the canned zigzag in that
+// it is symmetrical, it does not use percentages, but rather
+// log differences. close price is not used either. high and
+// low trades are used. an additional item is the trigger
+// indicator. it shows the point where the zig or zag was
+// identified.
+
+for(i=1;i<BarCount;i++){
+	if (log(H[i]/L[init])>HH) HH=log(H[i]/L[init]);
+	if (log(L[i]/H[init])<LL) LL=log(L[i]/H[init]);
+	if (HH>(t*thold[init]) && d<=0)
+		{ z[init]--; trig[i]=-0.5; d=1;init=i;HH=0;LL=0; }
+
+	if (H[i]>H[init] && d==1){init=i;LL=0;}
+
+	if (LL<(-t*thold[init]) && d>=0)
+		{ z[init]++; trig[i]=0.5; d=-1;init=i;HH=0;LL=0; }
+
+	if (L[i]<L[init] && d==-1){init=i;HH=0;}
+}
+
+z_up=z>0; z_dn=z<0;
+
+Plot(z_up,"zig",colorGreen,1);
+Plot(-z_dn,"zag",colorRed,1);
+Plot(trig,"trigger",colorBlue,1);

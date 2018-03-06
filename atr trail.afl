@@ -1,0 +1,24 @@
+// ATR stop based on Close
+// Steve Rowe 2004
+// When the stop is breached it immediately "resets"
+// use c<ref(stop,-1) to detect breach of stop line
+
+multiplier = Param("ATR multiplier",3,1,3,0.25);
+myATR =multiplier*ATR(21);
+initial=C-myATR;
+stop[ 0 ] = Close[ 0 ];
+
+for( i = 1 ; i < BarCount; i++)
+{
+if( Close[ i ] > stop[ i - 1])
+{
+temp = Close[ i ] - myATR[ i ];
+if( temp > stop[ i - 1 ] ) stop[ i ] = temp;
+else stop[ i ] = stop[ i - 1 ];
+}
+else
+stop[ i ] = initial[ i ];
+}
+
+Plot(C,"",2,styleBar);
+Plot(stop,"ATR Stop",colorRed,1);

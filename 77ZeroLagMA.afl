@@ -1,0 +1,14 @@
+function ZeroLagMA( data, periods )
+{
+EMA1 = EMA( data, periods );
+EMA2 = EMA( EMA1, periods );
+Diff = EMA1 - EMA2;
+return EMA1 + Diff;
+}
+
+Periods = Param("Periods", 20, 2, 100 );
+
+Plot( ZeroLagMA( Close, Periods ), "ZeroLagMA-"+Periods, colorBrightGreen, styleThick ); 
+
+/*In "Trading Medium-Term Divergences" in this issue, author Sylvain Vervoort shows a trading technique that combines his own SVAPO indicator with moving averages, RSI, trendlines, and trailing stops. The RSI is a standard indicator already available in AmiBroker.
+*/

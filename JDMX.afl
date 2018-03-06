@@ -1,0 +1,8 @@
+//SetBarsRequired(10000, 0); 
+
+
+Length=Param( "Length ", 14, 0, 100);
+
+Plot( JurikDMX( Length), _DEFAULT_NAME(), ParamColor( "Color", colorCycle ), ParamStyle("Style") );
+
+Plot(0,"",colorGrey50,styleLine);
